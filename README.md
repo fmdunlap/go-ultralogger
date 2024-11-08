@@ -204,6 +204,8 @@ logger.Panic("Panic!") // -> 2006-01-02 15:04:05 <PANIC> Panic! (and then does n
 ## TODO
 
 - [ ] Improve Color handling. Colors are currently using ASNI color cods, which isn' the most modern way to do this.
+- [ ] Optimize logging speed.
+- [ ] Make logging fields configurable (ability to add fields, change content, change field color, change field order,etc.)
 - [ ] Add the ability to pass option funcs to the constructors to allow for more flexibility.
 - [ ] Custom bracket types!
 - [ ] OnLogLevel handlers to allow for more advanced logging.
