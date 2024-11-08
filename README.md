@@ -9,7 +9,7 @@ UltraLogger is a versatile, flexible, and efficient logging library for Go that 
 formatting, and output destinations. It is designed to be easy to use while providing advanced features such as
 colorized output, customizable log levels, and detailed error handling.
 
-UltraLogger has no external dependencies and is written in pure Go.
+UltraLogger only uses the stdlib and is written in pure Go.
 
 ## Features
 - **Multiple Log Levels**: DEBUG, INFO, WARN, ERROR, PANIC, and FATAL levels.
