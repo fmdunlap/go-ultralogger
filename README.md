@@ -1,6 +1,6 @@
 # UltraLogger
 
-[![Logo](/git/logo.png)](https://github.com/forrestmdunlap/ultralogger)
+[![Logo](/git/logo.png)](https://github.com/fmdunlap/ultralogger)
 
 ## Overview
 UltraLogger is a versatile, flexible, and efficient logging library for Go that supports multiple log levels, custom formatting, and output destinations. It is designed to be easy to use while providing advanced features such as colorized output, customizable log levels, and detailed error handling.
@@ -27,7 +27,7 @@ package main
 
 import (
     "os"
-    "github.com/forrestmdunlap/ultralogger"
+    "github.com/fmdunlap/ultralogger"
 )
 
 func main() {
