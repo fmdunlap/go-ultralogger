@@ -510,7 +510,7 @@ func TestUltraLogger_Tag(t *testing.T) {
             l.SetTag(tt.tag)
 
             if tt.padTag {
-                l.EnabledTagPadding(true)
+                l.SetTagPaddingEnabled(true)
                 l.SetTagPadSize(tt.tagPadSize)
             }
 
@@ -779,11 +779,11 @@ func TestUltraLogger_TimeDate(t *testing.T) {
             l.updateFormatStrings()
 
             if tt.enablePadTag {
-                l.EnabledTagPadding(true)
+                l.SetTagPaddingEnabled(true)
                 l.SetTagPadSize(tt.tagPadSize)
 
                 if l.GetTagPaddingEnabled() != true {
-                    t.Errorf("UltraLogger.EnabledTagPadding() got = %v, want %v", l.GetTagPaddingEnabled(), true)
+                    t.Errorf("UltraLogger.SetTagPaddingEnabled() got = %v, want %v", l.GetTagPaddingEnabled(), true)
                 }
 
                 if l.GetTagPadSize() != tt.tagPadSize {

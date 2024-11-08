@@ -281,17 +281,17 @@ func (l *UltraLogger) GetTag() string {
     return l.tag
 }
 
-// EnabledTagPadding enables or disables the padding of the tag with spaces. If true, the tag will be padded with
+// SetTagPaddingEnabled enables or disables the padding of the tag with spaces. If true, the tag will be padded with
 // spaces to the specified tagPadSize. If false, the tag will not be padded. Returns the logger.
 //
 // Example:
-//   logger.EnabledTagPadding(true).SetTagPadSize(10)
-//   logger.EnabledTagPadding(false).SetTagPadSize(10) // This will have no effect
-//   logger.EnabledTagPadding(true).SetTagPadSize(0)   // This will have no effect
+//   logger.SetTagPaddingEnabled(true).SetTagPadSize(10)
+//   logger.SetTagPaddingEnabled(false).SetTagPadSize(10) // This will have no effect
+//   logger.SetTagPaddingEnabled(true).SetTagPadSize(0)   // This will have no effect
 //
 // Note: If the tag + bracket characters exceed the tagPadSize, the tag will push the message one space past the
 // tag and bracket characters.
-func (l *UltraLogger) EnabledTagPadding(pad bool) Logger {
+func (l *UltraLogger) SetTagPaddingEnabled(pad bool) Logger {
     l.padTag = pad
     l.updateFormatStrings()
     return l
@@ -312,7 +312,7 @@ func (l *UltraLogger) GetTagPaddingEnabled() bool {
 //   logger.Info("Hello, World!")   // "2024-11-07 15:04:05 [TAG] <INFO> Hello, World!"
 //   logger.Info("Go UltraLogger!") // "2024-11-07 15:04:05 [TAG] <INFO> Go UltraLogger!"
 //
-//   logger.EnabledTagPadding(true)
+//   logger.SetTagPaddingEnabled(true)
 //   logger.SetTagPadSize(10)
 //
 //   logger.Info("Hello, World!")   // "2024-11-07 15:04:05 [TAG]     <INFO> Hello, World!"
