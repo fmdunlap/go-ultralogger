@@ -2,6 +2,8 @@
 
 [![Logo](/git/logo.png)](https://github.com/fmdunlap/ultralogger)
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/fmdunlap/go-ultralogger.svg)](https://pkg.go.dev/github.com/fmdunlap/go-ultralogger)
+
 ## Overview
 UltraLogger is a versatile, flexible, and efficient logging library for Go that supports multiple log levels, custom
 formatting, and output destinations. It is designed to be easy to use while providing advanced features such as
