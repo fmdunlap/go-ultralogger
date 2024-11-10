@@ -2,19 +2,23 @@ package ultralogger
 
 import (
     "errors"
+    "github.com/fmdunlap/go-ultralogger/bracket"
+    "github.com/fmdunlap/go-ultralogger/field"
+    "github.com/fmdunlap/go-ultralogger/formatter"
+    "github.com/fmdunlap/go-ultralogger/level"
     "os"
 )
 
-// Logger defines the interface for a structured UltraLogger in Go.
+// Logger defines the interface for a structured ultraLogger in Go.
 //
 // This interface is useful for either creating your own logger or for using an existing logger, and preventing changes
 // to the loggers formatting settings.
 type Logger interface {
     // Log logs at the specified level without formatting.
-    Log(level Level, msg string)
+    Log(level level.Level, msg string)
 
     // Logf logs at the specified level with formatted message.
-    Logf(level Level, format string, args ...any)
+    Logf(level level.Level, format string, args ...any)
 
     // Debug logs a debug-level message.
     Debug(msg string)
@@ -46,22 +50,58 @@ type Logger interface {
     // Panicf logs a panic-level message with formatting and then panics.
     Panicf(format string, args ...any)
 
+    // Slog returns the string representation of a log message with the given level and message.
+    Slog(level level.Level, msg string) string
+
+    // Slogf returns the string representation of a formatted log message with the given level and sprint string.
+    Slogf(level level.Level, format string, args ...any) string
+
+    // Slogln returns the string representation of a log message with the given level and message, followed by a newline.
+    Slogln(level level.Level, msg string) string
+
     // SetMinLevel sets the minimum logging level that will be output.
-    SetMinLevel(level Level) Logger
+    SetMinLevel(level level.Level)
 }
 
-// NewStdoutLogger returns a new Logger that writes to stdout
-func NewStdoutLogger() *UltraLogger {
-    l := NewUltraLogger(os.Stdout)
-    return l
+var defaultDateTimeFormat = "2006-01-02 15:04:05"
+var defaultLevelBracket = bracket.Angle
+
+var defaultPrefixFields = []field.Field{
+    field.NewDateTimeField(defaultDateTimeFormat),
+    field.NewLevelField(defaultLevelBracket),
+}
+
+// NewLogger returns a new Logger that writes to stdout
+func NewLogger(opts ...LoggerOption) (Logger, error) {
+    fmtr, _ := formatter.NewColorizedFormatter(
+        defaultPrefixFields,
+        nil,
+        false,
+    )
+
+    l := &ultraLogger{
+        writer:            os.Stdout,
+        minLevel:          level.Info,
+        formatter:         fmtr,
+        silent:            false,
+        fallback:          true,
+        panicOnPanicLevel: false,
+    }
+
+    for _, opt := range opts {
+        if err := opt(l); err != nil {
+            return nil, err
+        }
+    }
+
+    return l, nil
 }
 
 // NewFileLogger returns a new Logger that writes to a file.
 //
 // If the filename is empty, FileNotSpecifiedError is returned.
 // If the file does not exist, FileNotFoundError is returned.
-func NewFileLogger(filename string) (*UltraLogger, error) {
-
+func NewFileLogger(filename string) (Logger, error) {
     if filename == "" {
         return nil, FileNotSpecifiedError
     }
@@ -75,7 +115,10 @@ func NewFileLogger(filename string) (*UltraLogger, error) {
         return nil, err
     }
 
-    fileLogger := NewUltraLogger(filePtr)
-    fileLogger.colorize = false
+    fileLogger, err := NewLogger(WithDestination(filePtr))
+    if err != nil {
+        return nil, err
+    }
+
     return fileLogger, nil
 }
