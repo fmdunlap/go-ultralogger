@@ -8,7 +8,7 @@ var ansiCSInit = []byte("\033[")
 var ansiCSEnd = byte('m')
 var ansiCSSeparator = byte(';')
 
-// TODO: 256 color + TrueColor
+// TODO: 256 color (maybe)
 
 var ColorRed = AnsiColor{code: []byte("31")}
 var ColorGreen = AnsiColor{code: []byte("32")}
