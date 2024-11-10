@@ -2,10 +2,10 @@ package ultralogger
 
 import (
     "errors"
-    "github.com/fmdunlap/go-ultralogger/bracket"
-    "github.com/fmdunlap/go-ultralogger/field"
-    "github.com/fmdunlap/go-ultralogger/formatter"
-    "github.com/fmdunlap/go-ultralogger/level"
+    "github.com/fmdunlap/go-ultralogger/v2/bracket"
+    "github.com/fmdunlap/go-ultralogger/v2/field"
+    "github.com/fmdunlap/go-ultralogger/v2/formatter"
+    "github.com/fmdunlap/go-ultralogger/v2/level"
     "os"
 )
 

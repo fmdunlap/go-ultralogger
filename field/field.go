@@ -1,7 +1,7 @@
 package field
 
 import (
-    "github.com/fmdunlap/go-ultralogger/level"
+    "github.com/fmdunlap/go-ultralogger/v2/level"
 )
 
 type FieldPrinterFunc func(PrintArgs) string

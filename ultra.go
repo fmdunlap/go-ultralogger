@@ -2,8 +2,8 @@ package ultralogger
 
 import (
     "fmt"
-    "github.com/fmdunlap/go-ultralogger/formatter"
-    "github.com/fmdunlap/go-ultralogger/level"
+    "github.com/fmdunlap/go-ultralogger/v2/formatter"
+    "github.com/fmdunlap/go-ultralogger/v2/level"
     "io"
     "os"
 )

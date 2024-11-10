@@ -1,8 +1,8 @@
 package field
 
 import (
-    "github.com/fmdunlap/go-ultralogger/bracket"
-    "github.com/fmdunlap/go-ultralogger/level"
+    "github.com/fmdunlap/go-ultralogger/v2/bracket"
+    "github.com/fmdunlap/go-ultralogger/v2/level"
     "testing"
 )
 

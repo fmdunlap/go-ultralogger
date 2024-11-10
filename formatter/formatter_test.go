@@ -2,10 +2,10 @@ package formatter
 
 import (
     "errors"
-    "github.com/fmdunlap/go-ultralogger/bracket"
-    "github.com/fmdunlap/go-ultralogger/color"
-    "github.com/fmdunlap/go-ultralogger/field"
-    "github.com/fmdunlap/go-ultralogger/level"
+    "github.com/fmdunlap/go-ultralogger/v2/bracket"
+    "github.com/fmdunlap/go-ultralogger/v2/color"
+    "github.com/fmdunlap/go-ultralogger/v2/field"
+    "github.com/fmdunlap/go-ultralogger/v2/level"
     "testing"
 )
 
@@ -127,7 +127,7 @@ func Test_ultraFormatter_Format(t *testing.T) {
     }
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
-            f, err := NewFormatter(tt.prefixFields, tt.suffixFields, tt.levelColors, tt.enableColor)
+            f, err := NewColorizedFormatter(tt.prefixFields, tt.suffixFields, tt.enableColor)
             if (err != nil) != tt.wantErr {
                 t.Errorf("NewFormatter() error = %v, wantErr %v", err, tt.wantErr)
                 return
@@ -136,6 +136,8 @@ func Test_ultraFormatter_Format(t *testing.T) {
             if err != nil {
                 return
             }
+
+            _ = f.SetLevelColors(tt.levelColors)
 
             if got := f.Format(tt.args.level, tt.args.msg); got != tt.want {
                 t.Errorf("Format() = %v, want %v", got, tt.want)
@@ -174,7 +176,7 @@ func Test_ultraFormatter_Formatf(t *testing.T) {
     }
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
-            f, err := NewFormatter(tt.prefixFields, tt.suffixFields, nil, false)
+            f, err := NewColorizedFormatter(tt.prefixFields, tt.suffixFields, false)
             if (err != nil) != tt.wantErr {
                 t.Errorf("NewFormatter() error = %v, wantErr %v", err, tt.wantErr)
                 return
@@ -303,7 +305,7 @@ func Test_ultraFormatter_SetFields(t *testing.T) {
     }
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
-            f, _ := NewFormatter(tt.initPrefixFields, tt.initSuffixFields, nil, false)
+            f, _ := NewColorizedFormatter(tt.initPrefixFields, tt.initSuffixFields, false)
 
             beforeLog := f.Format(tt.logLevel, tt.msg)
             if beforeLog != tt.before {

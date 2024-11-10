@@ -2,9 +2,9 @@ package formatter
 
 import (
     "fmt"
-    "github.com/fmdunlap/go-ultralogger/color"
-    "github.com/fmdunlap/go-ultralogger/field"
-    "github.com/fmdunlap/go-ultralogger/level"
+    "github.com/fmdunlap/go-ultralogger/v2/color"
+    "github.com/fmdunlap/go-ultralogger/v2/field"
+    "github.com/fmdunlap/go-ultralogger/v2/level"
     "maps"
     "strings"
 )
