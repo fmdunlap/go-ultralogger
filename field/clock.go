@@ -1,4 +1,4 @@
-package ultralogger
+package field
 
 import "time"
 

@@ -1,4 +1,4 @@
-package ultralogger
+package level
 
 import (
     "reflect"
@@ -13,11 +13,11 @@ func TestAllLevels(t *testing.T) {
         {
             "AllLevels",
             []Level{
-                DebugLevel,
-                InfoLevel,
-                WarnLevel,
-                ErrorLevel,
-                PanicLevel,
+                Debug,
+                Info,
+                Warn,
+                Error,
+                Panic,
             },
         },
     }
@@ -36,11 +36,11 @@ func TestLevel_String(t *testing.T) {
         l    Level
         want string
     }{
-        {"DebugLevel", DebugLevel, "DEBUG"},
-        {"InfoLevel", InfoLevel, "INFO"},
-        {"WarnLevel", WarnLevel, "WARN"},
-        {"ErrorLevel", ErrorLevel, "ERROR"},
-        {"PanicLevel", PanicLevel, "PANIC"},
+        {"Debug", Debug, "DEBUG"},
+        {"Info", Info, "INFO"},
+        {"Warn", Warn, "WARN"},
+        {"Error", Error, "ERROR"},
+        {"Panic", Panic, "PANIC"},
         {"UnknownLevel", Level(42), "UNKNOWN"},
     }
     for _, tt := range tests {
@@ -62,11 +62,11 @@ func TestParseLevel(t *testing.T) {
         want    Level
         wantErr bool
     }{
-        {"DebugLevel", args{"debug"}, DebugLevel, false},
-        {"InfoLevel", args{"info"}, InfoLevel, false},
-        {"WarnLevel", args{"warn"}, WarnLevel, false},
-        {"ErrorLevel", args{"error"}, ErrorLevel, false},
-        {"PanicLevel", args{"panic"}, PanicLevel, false},
+        {"Debug", args{"debug"}, Debug, false},
+        {"Info", args{"info"}, Info, false},
+        {"Warn", args{"warn"}, Warn, false},
+        {"Error", args{"error"}, Error, false},
+        {"Panic", args{"panic"}, Panic, false},
         {"InvalidLevel", args{"invalid"}, 0, true},
     }
     for _, tt := range tests {

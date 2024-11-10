@@ -1,4 +1,4 @@
-package ultralogger
+package level
 
 import (
     "strings"
@@ -7,57 +7,49 @@ import (
 // Level is a type representing the level of a log message.
 //
 // It can be one of the following:
-//   - DebugLevel
-//   - InfoLevel
-//   - WarnLevel
-//   - ErrorLevel
-//   - PanicLevel
+//   - Debug
+//   - Info
+//   - Warn
+//   - Error
+//   - Panic
 //
 // Levels determine the priority of a log message, and can be hidden if a logger's minimum level is set to a higher
 // level than the message's level.
 //
-// For example, if a logger's minimum level is set to WarnLevel, then a message with a level of InfoLevel will not be
+// For example, if a logger's minimum level is set to Warn, then a message with a level of Info will not be
 // written to the output.
 type Level int
 
-var defaultLevelColors = map[Level]Color{
-    DebugLevel: ColorGreen,
-    InfoLevel:  ColorWhite,
-    WarnLevel:  ColorYellow,
-    ErrorLevel: ColorRed,
-    PanicLevel: ColorMagenta,
-}
-
 const (
-    DebugLevel Level = iota
-    InfoLevel
-    WarnLevel
-    ErrorLevel
-    PanicLevel
+    Debug Level = iota
+    Info
+    Warn
+    Error
+    Panic
 )
 
 // AllLevels returns a slice of all available levels.
 func AllLevels() []Level {
     return []Level{
-        DebugLevel,
-        InfoLevel,
-        WarnLevel,
-        ErrorLevel,
-        PanicLevel,
+        Debug,
+        Info,
+        Warn,
+        Error,
+        Panic,
     }
 }
 
 func (l Level) String() string {
     switch l {
-    case DebugLevel:
+    case Debug:
         return "DEBUG"
-    case InfoLevel:
+    case Info:
         return "INFO"
-    case WarnLevel:
+    case Warn:
         return "WARN"
-    case ErrorLevel:
+    case Error:
         return "ERROR"
-    case PanicLevel:
+    case Panic:
         return "PANIC"
     default:
         return "UNKNOWN"
@@ -68,16 +60,16 @@ func (l Level) String() string {
 func ParseLevel(levelStr string) (Level, error) {
     switch strings.ToLower(levelStr) {
     case "debug":
-        return DebugLevel, nil
+        return Debug, nil
     case "info":
-        return InfoLevel, nil
+        return Info, nil
     case "warn":
-        return WarnLevel, nil
+        return Warn, nil
     case "error":
-        return ErrorLevel, nil
+        return Error, nil
     case "panic":
-        return PanicLevel, nil
+        return Panic, nil
     default:
-        return 0, &LevelParsingError{level: levelStr}
+        return 0, &ParsingError{level: levelStr}
     }
 }
