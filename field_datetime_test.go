@@ -1,7 +1,6 @@
-package field
+package ultralogger
 
 import (
-    "github.com/fmdunlap/go-ultralogger/v2/level"
     "testing"
     "time"
 )
@@ -22,45 +21,45 @@ func TestDateTimeField_FieldPrinter(t *testing.T) {
     }{
         {
             name: "Default",
-            dateTimeField: &DateTimeField{
+            dateTimeField: &FieldDateTime{
                 dateTimeFormat: "2006-01-02 15:04:05",
                 clock:          mockClock{},
             },
             printArgs: PrintArgs{
-                Level: level.Info,
+                Level: Info,
             },
             want: "2024-11-07 19:30:00",
         },
         {
             name: "Only Time",
-            dateTimeField: &DateTimeField{
+            dateTimeField: &FieldDateTime{
                 dateTimeFormat: "15:04:05",
                 clock:          mockClock{},
             },
             printArgs: PrintArgs{
-                Level: level.Info,
+                Level: Info,
             },
             want: "19:30:00",
         },
         {
             name: "Only Date",
-            dateTimeField: &DateTimeField{
+            dateTimeField: &FieldDateTime{
                 dateTimeFormat: "2006-01-02",
                 clock:          mockClock{},
             },
             printArgs: PrintArgs{
-                Level: level.Info,
+                Level: Info,
             },
             want: "2024-11-07",
         },
         {
             name: "Set DateTimeFormat",
-            dateTimeField: (&DateTimeField{
+            dateTimeField: (&FieldDateTime{
                 dateTimeFormat: "2006-01-02 15:04:05",
                 clock:          mockClock{},
             }).SetDateTimeFormat("06/01/02"),
             printArgs: PrintArgs{
-                Level: level.Info,
+                Level: Info,
             },
             want: "24/11/07",
         },

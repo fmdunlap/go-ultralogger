@@ -1,8 +1,6 @@
-package field
+package ultralogger
 
 import (
-    "github.com/fmdunlap/go-ultralogger/v2/bracket"
-    "github.com/fmdunlap/go-ultralogger/v2/level"
     "testing"
 )
 
@@ -16,49 +14,49 @@ func TestLevelField_FieldPrinter(t *testing.T) {
     }{
         {
             name:       "Default",
-            levelField: NewLevelField(bracket.Angle),
+            levelField: NewLevelField(BracketAngle),
             printArgs: PrintArgs{
-                Level: level.Info,
+                Level: Info,
             },
             want: "<INFO>",
         },
         {
             name:       "Round Bracket",
-            levelField: NewLevelField(bracket.Round),
+            levelField: NewLevelField(BracketRound),
             printArgs: PrintArgs{
-                Level: level.Info,
+                Level: Info,
             },
             want: "(INFO)",
         },
         {
             name:       "Debug",
-            levelField: NewLevelField(bracket.Angle),
+            levelField: NewLevelField(BracketAngle),
             printArgs: PrintArgs{
-                Level: level.Debug,
+                Level: Debug,
             },
             want: "<DEBUG>",
         },
         {
             name:       "Warn",
-            levelField: NewLevelField(bracket.Angle),
+            levelField: NewLevelField(BracketAngle),
             printArgs: PrintArgs{
-                Level: level.Warn,
+                Level: Warn,
             },
             want: "<WARN>",
         },
         {
             name:       "Error",
-            levelField: NewLevelField(bracket.Angle),
+            levelField: NewLevelField(BracketAngle),
             printArgs: PrintArgs{
-                Level: level.Error,
+                Level: Error,
             },
             want: "<ERROR>",
         },
         {
             name:       "Panic",
-            levelField: NewLevelField(bracket.Angle),
+            levelField: NewLevelField(BracketAngle),
             printArgs: PrintArgs{
-                Level: level.Panic,
+                Level: Panic,
             },
             want: "<PANIC>",
         },

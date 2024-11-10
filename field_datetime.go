@@ -1,7 +1,7 @@
-package field
+package ultralogger
 
-func NewDateTimeField(dateTimeFormat string) *DateTimeField {
-    dtf := &DateTimeField{
+func NewDateTimeField(dateTimeFormat string) *FieldDateTime {
+    dtf := &FieldDateTime{
         dateTimeFormat: dateTimeFormat,
         clock:          &realClock{},
     }
@@ -9,12 +9,12 @@ func NewDateTimeField(dateTimeFormat string) *DateTimeField {
     return dtf
 }
 
-type DateTimeField struct {
+type FieldDateTime struct {
     dateTimeFormat string
     clock          clock
 }
 
-func (f *DateTimeField) FieldPrinter() (FieldPrinterFunc, error) {
+func (f *FieldDateTime) FieldPrinter() (FieldPrinterFunc, error) {
     // TODO: Make a check here for invalid date time format strings.
 
     return func(info PrintArgs) string {
@@ -22,7 +22,7 @@ func (f *DateTimeField) FieldPrinter() (FieldPrinterFunc, error) {
     }, nil
 }
 
-func (f *DateTimeField) SetDateTimeFormat(format string) Field {
+func (f *FieldDateTime) SetDateTimeFormat(format string) Field {
     f.dateTimeFormat = format
     return f
 }

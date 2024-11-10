@@ -1,13 +1,9 @@
-package field
-
-import (
-    "github.com/fmdunlap/go-ultralogger/v2/level"
-)
+package ultralogger
 
 type FieldPrinterFunc func(PrintArgs) string
 
 type PrintArgs struct {
-    Level level.Level
+    Level Level
 }
 
 type Field interface {

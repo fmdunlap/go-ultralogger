@@ -1,4 +1,4 @@
-package color
+package ultralogger
 
 import (
     "fmt"
@@ -13,9 +13,9 @@ func TestAnsiColor_Colorize(t *testing.T) {
         want string
     }{
         {
-            name: "Red",
+            name: "ColorRed",
             msg:  "test",
-            c:    Red,
+            c:    ColorRed,
             want: "\033[31mtest\033[0m",
         },
         {
@@ -23,7 +23,7 @@ func TestAnsiColor_Colorize(t *testing.T) {
             msg:  "test",
             c: AnsiColor{
                 code:     []byte("31"),
-                settings: []ansiSetting{Bold},
+                settings: []ansiSetting{AnsiBold},
             },
             want: "\033[1;31mtest\033[0m",
         },
@@ -32,7 +32,7 @@ func TestAnsiColor_Colorize(t *testing.T) {
             msg:  "test",
             c: AnsiColor{
                 code:     []byte("31"),
-                settings: []ansiSetting{Dim},
+                settings: []ansiSetting{AnsiDim},
             },
             want: "\033[2;31mtest\033[0m",
         },
@@ -41,7 +41,7 @@ func TestAnsiColor_Colorize(t *testing.T) {
             msg:  "test",
             c: AnsiColor{
                 code:     []byte("31"),
-                settings: []ansiSetting{Italic},
+                settings: []ansiSetting{AnsiItalic},
             },
             want: "\033[3;31mtest\033[0m",
         },
@@ -50,7 +50,7 @@ func TestAnsiColor_Colorize(t *testing.T) {
             msg:  "test",
             c: AnsiColor{
                 code:     []byte("31"),
-                settings: []ansiSetting{Underline},
+                settings: []ansiSetting{AnsiUnderline},
             },
             want: "\033[4;31mtest\033[0m",
         },
@@ -59,7 +59,7 @@ func TestAnsiColor_Colorize(t *testing.T) {
             msg:  "test",
             c: AnsiColor{
                 code:     []byte("31"),
-                settings: []ansiSetting{SlowBlink},
+                settings: []ansiSetting{AnsiSlowBlink},
             },
             want: "\033[5;31mtest\033[0m",
         },
@@ -68,7 +68,7 @@ func TestAnsiColor_Colorize(t *testing.T) {
             msg:  "test",
             c: AnsiColor{
                 code:     []byte("31"),
-                settings: []ansiSetting{Strikethrough},
+                settings: []ansiSetting{AnsiStrikethrough},
             },
             want: "\033[9;31mtest\033[0m",
         },
@@ -77,7 +77,7 @@ func TestAnsiColor_Colorize(t *testing.T) {
             msg:  "test",
             c: AnsiColor{
                 code:     []byte("31"),
-                settings: []ansiSetting{Bold, Italic, Underline, SlowBlink, Strikethrough},
+                settings: []ansiSetting{AnsiBold, AnsiItalic, AnsiUnderline, AnsiSlowBlink, AnsiStrikethrough},
             },
             want: "\033[1;3;4;5;9;31mtest\033[0m",
         },
@@ -112,7 +112,7 @@ func TestAnsiColor_Colorize(t *testing.T) {
             msg:  "test",
             c: AnsiColor{
                 code:       []byte("30"),
-                settings:   []ansiSetting{Bold},
+                settings:   []ansiSetting{AnsiBold},
                 background: BackgroundRGB(138, 206, 0),
             },
             want: "\033[1;48;2;138;206;0;30mtest\033[0m",
@@ -122,7 +122,7 @@ func TestAnsiColor_Colorize(t *testing.T) {
             msg:  "test",
             c: AnsiColor{
                 code:       []byte("30"),
-                settings:   []ansiSetting{Bold, Italic, Underline, SlowBlink, Strikethrough},
+                settings:   []ansiSetting{AnsiBold, AnsiItalic, AnsiUnderline, AnsiSlowBlink, AnsiStrikethrough},
                 background: BackgroundRed,
             },
             want: "\033[1;3;4;5;9;41;30mtest\033[0m",
@@ -132,7 +132,7 @@ func TestAnsiColor_Colorize(t *testing.T) {
             msg:  "test",
             c: AnsiColor{
                 code:       []byte("30"),
-                settings:   []ansiSetting{Bold, Italic, Underline, SlowBlink, Strikethrough},
+                settings:   []ansiSetting{AnsiBold, AnsiItalic, AnsiUnderline, AnsiSlowBlink, AnsiStrikethrough},
                 background: BackgroundRGB(138, 206, 0),
             },
             want: "\033[1;3;4;5;9;48;2;138;206;0;30mtest\033[0m",
@@ -184,7 +184,7 @@ func TestAnsiColor_totalBufferLength(t *testing.T) {
             name: "Bold",
             c: AnsiColor{
                 code:       []byte("31"),
-                settings:   []ansiSetting{Bold},
+                settings:   []ansiSetting{AnsiBold},
                 background: nil,
                 // output:     "\033[1;31mtest\033[0m",
             },
@@ -195,7 +195,7 @@ func TestAnsiColor_totalBufferLength(t *testing.T) {
             name: "Multiple Settings",
             c: AnsiColor{
                 code:       []byte("31"),
-                settings:   []ansiSetting{Bold, Italic, Underline, SlowBlink, Strikethrough},
+                settings:   []ansiSetting{AnsiBold, AnsiItalic, AnsiUnderline, AnsiSlowBlink, AnsiStrikethrough},
                 background: nil,
                 // output:     "\033[1;3;4;5;9;31mtest\033[0m",
             },

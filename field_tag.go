@@ -1,13 +1,12 @@
-package field
+package ultralogger
 
 import (
-    "github.com/fmdunlap/go-ultralogger/v2/bracket"
     "strings"
 )
 
-type TagField struct {
+type FieldTag struct {
     tag            string
-    bracket        bracket.Bracket
+    bracket        Bracket
     padSettings    *TagPadSettings
     precomputedTag *string
 }
@@ -18,10 +17,10 @@ type TagPadSettings struct {
     SuffixPadSize int
 }
 
-func NewTagField(tag string, opts ...TagFieldOpt) *TagField {
-    tf := &TagField{
+func NewTagField(tag string, opts ...TagFieldOpt) *FieldTag {
+    tf := &FieldTag{
         tag:     tag,
-        bracket: bracket.Square,
+        bracket: BracketSquare,
         padSettings: &TagPadSettings{
             PadChar:       " ",
             PrefixPadSize: 0,
@@ -38,7 +37,7 @@ func NewTagField(tag string, opts ...TagFieldOpt) *TagField {
     return tf
 }
 
-func (f *TagField) FieldPrinter() (FieldPrinterFunc, error) {
+func (f *FieldTag) FieldPrinter() (FieldPrinterFunc, error) {
     if f.precomputedTag == nil {
         f.updatePrecomputedTag()
     }
@@ -48,44 +47,44 @@ func (f *TagField) FieldPrinter() (FieldPrinterFunc, error) {
     }, nil
 }
 
-type TagFieldOpt func(tf *TagField)
+type TagFieldOpt func(tf *FieldTag)
 
 func WithPadSettings(padSettings TagPadSettings) TagFieldOpt {
-    return func(tf *TagField) {
+    return func(tf *FieldTag) {
         tf.padSettings = &padSettings
     }
 }
 
 func WithPadChar(padChar string) TagFieldOpt {
-    return func(tf *TagField) {
+    return func(tf *FieldTag) {
         tf.padSettings.PadChar = padChar
     }
 }
 
 func WithPrefixPadSize(prefixPadSize int) TagFieldOpt {
-    return func(tf *TagField) {
+    return func(tf *FieldTag) {
         tf.padSettings.PrefixPadSize = prefixPadSize
     }
 }
 
 func WithSuffixPadSize(suffixPadSize int) TagFieldOpt {
-    return func(tf *TagField) {
+    return func(tf *FieldTag) {
         tf.padSettings.SuffixPadSize = suffixPadSize
     }
 }
 
-func WithBracket(bracket bracket.Bracket) TagFieldOpt {
-    return func(tf *TagField) {
+func WithBracket(bracket Bracket) TagFieldOpt {
+    return func(tf *FieldTag) {
         tf.bracket = bracket
     }
 }
 
-func (f *TagField) updatePrecomputedTag() {
+func (f *FieldTag) updatePrecomputedTag() {
     tagStr := f.tagString()
     f.precomputedTag = &tagStr
 }
 
-func (f *TagField) tagString() string {
+func (f *FieldTag) tagString() string {
     if f.tag == "" {
         return ""
     }

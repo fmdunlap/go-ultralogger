@@ -1,10 +1,6 @@
 package ultralogger
 
 import (
-    "github.com/fmdunlap/go-ultralogger/v2/color"
-    "github.com/fmdunlap/go-ultralogger/v2/field"
-    "github.com/fmdunlap/go-ultralogger/v2/formatter"
-    "github.com/fmdunlap/go-ultralogger/v2/level"
     "io"
 )
 
@@ -17,28 +13,28 @@ func WithDestination(writer io.Writer) LoggerOption {
     }
 }
 
-func WithMinLevel(level level.Level) LoggerOption {
+func WithMinLevel(level Level) LoggerOption {
     return func(l *ultraLogger) error {
         l.minLevel = level
         return nil
     }
 }
 
-func WithFormatter(formatter formatter.Formatter) LoggerOption {
+func WithFormatter(formatter Formatter) LoggerOption {
     return func(l *ultraLogger) error {
         l.formatter = formatter
         return nil
     }
 }
 
-func WithPrefixFields(fields ...field.Field) LoggerOption {
+func WithPrefixFields(fields ...Field) LoggerOption {
     return func(l *ultraLogger) error {
         // TODO: Handle this error with a custom type.
         return l.formatter.SetPrefixFields(fields...)
     }
 }
 
-func WithSuffixFields(fields ...field.Field) LoggerOption {
+func WithSuffixFields(fields ...Field) LoggerOption {
     return func(l *ultraLogger) error {
         // TODO: Handle this error with a custom type.
         return l.formatter.SetSuffixFields(fields...)
@@ -68,7 +64,7 @@ func WithPanicOnPanicLevel(panicOnPanicLevel bool) LoggerOption {
 
 func WithColorization(colorize bool) LoggerOption {
     return func(l *ultraLogger) error {
-        colorizedFormatter, ok := l.formatter.(formatter.ColorizedFormatter)
+        colorizedFormatter, ok := l.formatter.(ColorizedFormatter)
         if !ok {
             return ColorizationNotSupportedError
         }
@@ -77,9 +73,9 @@ func WithColorization(colorize bool) LoggerOption {
     }
 }
 
-func WithLevelColors(colors map[level.Level]color.Color) LoggerOption {
+func WithLevelColors(colors map[Level]Color) LoggerOption {
     return func(l *ultraLogger) error {
-        colorizedFormatter, ok := l.formatter.(formatter.ColorizedFormatter)
+        colorizedFormatter, ok := l.formatter.(ColorizedFormatter)
         if !ok {
             return ColorizationNotSupportedError
         }

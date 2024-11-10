@@ -1,4 +1,4 @@
-package color
+package ultralogger
 
 import "fmt"
 
@@ -10,14 +10,14 @@ var ansiCSSeparator = byte(';')
 
 // TODO: 256 color + TrueColor
 
-var Red = AnsiColor{code: []byte("31")}
-var Green = AnsiColor{code: []byte("32")}
-var Yellow = AnsiColor{code: []byte("33")}
-var Blue = AnsiColor{code: []byte("34")}
-var Magenta = AnsiColor{code: []byte("35")}
-var Cyan = AnsiColor{code: []byte("36")}
-var White = AnsiColor{code: []byte("37")}
-var Default = AnsiColor{code: []byte("39")}
+var ColorRed = AnsiColor{code: []byte("31")}
+var ColorGreen = AnsiColor{code: []byte("32")}
+var ColorYellow = AnsiColor{code: []byte("33")}
+var ColorBlue = AnsiColor{code: []byte("34")}
+var ColorMagenta = AnsiColor{code: []byte("35")}
+var ColorCyan = AnsiColor{code: []byte("36")}
+var ColorWhite = AnsiColor{code: []byte("37")}
+var ColorDefault = AnsiColor{code: []byte("39")}
 
 type AnsiColor struct {
     code       []byte
@@ -40,7 +40,7 @@ func (ac AnsiColor) SetBackground(background AnsiBackgroundColor) AnsiColor {
 func (ac AnsiColor) Bold() AnsiColor {
     return AnsiColor{
         code:       ac.code,
-        settings:   append(ac.settings, Bold),
+        settings:   append(ac.settings, AnsiBold),
         background: ac.background,
     }
 }
@@ -48,7 +48,7 @@ func (ac AnsiColor) Bold() AnsiColor {
 func (ac AnsiColor) Dim() AnsiColor {
     return AnsiColor{
         code:       ac.code,
-        settings:   append(ac.settings, Dim),
+        settings:   append(ac.settings, AnsiDim),
         background: ac.background,
     }
 }
@@ -56,7 +56,7 @@ func (ac AnsiColor) Dim() AnsiColor {
 func (ac AnsiColor) Italic() AnsiColor {
     return AnsiColor{
         code:       ac.code,
-        settings:   append(ac.settings, Italic),
+        settings:   append(ac.settings, AnsiItalic),
         background: ac.background,
     }
 }
@@ -64,7 +64,7 @@ func (ac AnsiColor) Italic() AnsiColor {
 func (ac AnsiColor) Underline() AnsiColor {
     return AnsiColor{
         code:       ac.code,
-        settings:   append(ac.settings, Underline),
+        settings:   append(ac.settings, AnsiUnderline),
         background: ac.background,
     }
 }
@@ -72,7 +72,7 @@ func (ac AnsiColor) Underline() AnsiColor {
 func (ac AnsiColor) SlowBlink() AnsiColor {
     return AnsiColor{
         code:       ac.code,
-        settings:   append(ac.settings, SlowBlink),
+        settings:   append(ac.settings, AnsiSlowBlink),
         background: ac.background,
     }
 }

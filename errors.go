@@ -24,3 +24,11 @@ func (e *FileNotFoundError) Error() string {
 }
 
 var ColorizationNotSupportedError = errors.New("formatter does not support colorization")
+
+type LevelParsingError struct {
+    level string
+}
+
+func (e *LevelParsingError) Error() string {
+    return fmt.Sprintf("invalid level: %s", e.level)
+}

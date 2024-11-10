@@ -1,10 +1,10 @@
-package bracket
+package ultralogger
 
-var Angle = SimpleBracket{"<", ">"}
-var Square = SimpleBracket{"[", "]"}
-var Round = SimpleBracket{"(", ")"}
-var Curly = SimpleBracket{"{", "}"}
-var None = SimpleBracket{"", ""}
+var BracketAngle = SimpleBracket{"<", ">"}
+var BracketSquare = SimpleBracket{"[", "]"}
+var BracketRound = SimpleBracket{"(", ")"}
+var BracketCurly = SimpleBracket{"{", "}"}
+var BracketNone = SimpleBracket{"", ""}
 
 type Bracket interface {
     Open() string

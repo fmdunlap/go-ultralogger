@@ -1,7 +1,6 @@
-package field
+package ultralogger
 
 import (
-    "github.com/fmdunlap/go-ultralogger/v2/bracket"
     "testing"
 )
 
@@ -21,7 +20,7 @@ func TestTagField_FieldPrinter(t *testing.T) {
         },
         {
             name:      "With Bracket",
-            tagField:  NewTagField("test", WithBracket(bracket.Round)),
+            tagField:  NewTagField("test", WithBracket(BracketRound)),
             printArgs: PrintArgs{},
             want:      "(test)",
         },

@@ -1,41 +1,38 @@
-package formatter
+package ultralogger
 
 import (
     "fmt"
-    "github.com/fmdunlap/go-ultralogger/v2/color"
-    "github.com/fmdunlap/go-ultralogger/v2/field"
-    "github.com/fmdunlap/go-ultralogger/v2/level"
     "maps"
     "strings"
 )
 
 type Formatter interface {
-    Format(level level.Level, msg string) string
-    Formatf(level level.Level, format string, args ...any) string
-    SetPrefixFields(fields ...field.Field) error
-    SetSuffixFields(fields ...field.Field) error
+    Format(level Level, msg string) string
+    Formatf(level Level, format string, args ...any) string
+    SetPrefixFields(fields ...Field) error
+    SetSuffixFields(fields ...Field) error
 }
 
 type ColorizedFormatter interface {
     Formatter
     EnableColorization(colorize bool) error
-    SetLevelColors(colors map[level.Level]color.Color) error
+    SetLevelColors(colors map[Level]Color) error
 }
 
-var defaultLevelColors = map[level.Level]color.Color{
-    level.Debug: color.Green,
-    level.Info:  color.White,
-    level.Warn:  color.Yellow,
-    level.Error: color.Red,
-    level.Panic: color.Magenta,
+var defaultLevelColors = map[Level]Color{
+    Debug: ColorGreen,
+    Info:  ColorWhite,
+    Warn:  ColorYellow,
+    Error: ColorRed,
+    Panic: ColorMagenta,
 }
 
 func NewColorizedFormatter(
-    prefixFields []field.Field,
-    suffixFields []field.Field,
+    prefixFields []Field,
+    suffixFields []Field,
     enableColor bool,
 ) (ColorizedFormatter, error) {
-    levelColors := make(map[level.Level]color.Color)
+    levelColors := make(map[Level]Color)
     maps.Copy(levelColors, defaultLevelColors)
 
     uf := &ultraFormatter{
@@ -55,16 +52,16 @@ func NewColorizedFormatter(
 
 type ultraFormatter struct {
     // prefixFields are the fields that will be printed before the log message.
-    prefixFields []field.Field
+    prefixFields []Field
 
     // suffixFields are the fields that will be printed after the log message.
-    suffixFields []field.Field
+    suffixFields []Field
 
     // prefixFieldPrintFuncs is an array, in order, of the prefix field printFuncs.
-    prefixFieldPrinterFuncs []field.FieldPrinterFunc
+    prefixFieldPrinterFuncs []FieldPrinterFunc
 
     // suffixFieldPrintFuncs is an array, in order, of the suffix field printFuncs.
-    suffixFieldPrinterFuncs []field.FieldPrinterFunc
+    suffixFieldPrinterFuncs []FieldPrinterFunc
 
     // colorize indicates whether the log message should be colorized. If true, the log message will be colorized. If
     // false, the log message will not be colorized.
@@ -73,11 +70,11 @@ type ultraFormatter struct {
     colorize bool
 
     // levelColors is a map of log levels to colors. It is used to colorize the log message based on the log level.
-    levelColors map[level.Level]color.Color
+    levelColors map[Level]Color
 }
 
-func (f *ultraFormatter) Format(level level.Level, msg string) string {
-    fieldArgs := field.PrintArgs{
+func (f *ultraFormatter) Format(level Level, msg string) string {
+    fieldArgs := PrintArgs{
         Level: level,
     }
 
@@ -102,22 +99,22 @@ func (f *ultraFormatter) Format(level level.Level, msg string) string {
     return b.String()
 }
 
-func (f *ultraFormatter) Formatf(level level.Level, format string, args ...any) string {
+func (f *ultraFormatter) Formatf(level Level, format string, args ...any) string {
     return f.Format(level, fmt.Sprintf(format, args...))
 }
 
-func (f *ultraFormatter) SetPrefixFields(fields ...field.Field) error {
+func (f *ultraFormatter) SetPrefixFields(fields ...Field) error {
     f.prefixFields = fields
     return f.updatePrinterFuncs()
 }
 
-func (f *ultraFormatter) SetSuffixFields(fields ...field.Field) error {
+func (f *ultraFormatter) SetSuffixFields(fields ...Field) error {
     f.suffixFields = fields
     return f.updatePrinterFuncs()
 }
 
 func (f *ultraFormatter) updatePrinterFuncs() error {
-    f.prefixFieldPrinterFuncs = make([]field.FieldPrinterFunc, len(f.prefixFields))
+    f.prefixFieldPrinterFuncs = make([]FieldPrinterFunc, len(f.prefixFields))
     for i, fld := range f.prefixFields {
         printerFunc, err := fld.FieldPrinter()
         if err != nil {
@@ -126,7 +123,7 @@ func (f *ultraFormatter) updatePrinterFuncs() error {
         f.prefixFieldPrinterFuncs[i] = printerFunc
     }
 
-    f.suffixFieldPrinterFuncs = make([]field.FieldPrinterFunc, len(f.suffixFields))
+    f.suffixFieldPrinterFuncs = make([]FieldPrinterFunc, len(f.suffixFields))
     for i, fld := range f.suffixFields {
         printerFunc, err := fld.FieldPrinter()
         if err != nil {
@@ -143,8 +140,8 @@ func (f *ultraFormatter) EnableColorization(colorize bool) error {
     return nil
 }
 
-func (f *ultraFormatter) SetLevelColors(colors map[level.Level]color.Color) error {
-    for _, level := range level.AllLevels() {
+func (f *ultraFormatter) SetLevelColors(colors map[Level]Color) error {
+    for _, level := range AllLevels() {
         if _, ok := colors[level]; ok {
             f.levelColors[level] = colors[level]
         }

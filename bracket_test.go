@@ -1,4 +1,4 @@
-package bracket
+package ultralogger
 
 import "testing"
 
@@ -151,32 +151,32 @@ func TestBracketType_BuiltinWrap(t *testing.T) {
         want    string
     }{
         {
-            name:    "Angle",
-            b:       Angle,
+            name:    "BracketAngle",
+            b:       BracketAngle,
             content: "test",
             want:    "<test>",
         },
         {
             name:    "Square",
-            b:       Square,
+            b:       BracketSquare,
             content: "test",
             want:    "[test]",
         },
         {
             name:    "Round",
-            b:       Round,
+            b:       BracketRound,
             content: "test",
             want:    "(test)",
         },
         {
             name:    "Curly",
-            b:       Curly,
+            b:       BracketCurly,
             content: "test",
             want:    "{test}",
         },
         {
             name:    "None",
-            b:       None,
+            b:       BracketNone,
             content: "test",
             want:    "test",
         },

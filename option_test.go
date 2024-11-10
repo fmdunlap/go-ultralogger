@@ -1,16 +1,12 @@
 package ultralogger
 
 import (
-    "github.com/fmdunlap/go-ultralogger/v2/bracket"
-    "github.com/fmdunlap/go-ultralogger/v2/color"
-    "github.com/fmdunlap/go-ultralogger/v2/field"
-    "github.com/fmdunlap/go-ultralogger/v2/level"
     "testing"
 )
 
 // TODO: Tests for WithFallback, WithDestination, WithFormatter, WithPanicOnPanicLevel
 
-func testFormatOption(t *testing.T, options []LoggerOption, msg string, msgLevel level.Level, want string) {
+func testFormatOption(t *testing.T, options []LoggerOption, msg string, msgLevel Level, want string) {
     allOpt := []LoggerOption{WithPrefixFields()}
     allOpt = append(allOpt, options...)
 
@@ -29,21 +25,21 @@ func TestWithColorization(t *testing.T) {
         name     string
         options  []LoggerOption
         msg      string
-        msgLevel level.Level
+        msgLevel Level
         want     string
     }{
         {
             name:     "WithColorization(true)",
             options:  []LoggerOption{WithColorization(true)},
             msg:      "test",
-            msgLevel: level.Warn,
-            want:     color.Yellow.Colorize("test"),
+            msgLevel: Warn,
+            want:     ColorYellow.Colorize("test"),
         },
         {
             name:     "WithColorization(false)",
             options:  []LoggerOption{WithColorization(false)},
             msg:      "test",
-            msgLevel: level.Warn,
+            msgLevel: Warn,
             want:     "test",
         },
     }
@@ -59,46 +55,46 @@ func TestWithLevelColors(t *testing.T) {
         name     string
         options  []LoggerOption
         msg      string
-        msgLevel level.Level
+        msgLevel Level
         want     string
     }{
         {
             name: "WithLevelColors()",
-            options: []LoggerOption{WithLevelColors(map[level.Level]color.Color{
-                level.Debug: color.Yellow,
-                level.Info:  color.Blue,
-                level.Warn:  color.Green,
-                level.Error: color.Red,
-                level.Panic: color.Magenta,
+            options: []LoggerOption{WithLevelColors(map[Level]Color{
+                Debug: ColorYellow,
+                Info:  ColorBlue,
+                Warn:  ColorGreen,
+                Error: ColorRed,
+                Panic: ColorMagenta,
             }),
                 WithColorization(true)},
             msg:      "test",
-            msgLevel: level.Warn,
-            want:     color.Green.Colorize("test"),
+            msgLevel: Warn,
+            want:     ColorGreen.Colorize("test"),
         },
         {
             name: "With partial level colors",
-            options: []LoggerOption{WithLevelColors(map[level.Level]color.Color{
-                level.Debug: color.Yellow,
-                level.Info:  color.Blue,
-                level.Warn:  color.Green,
+            options: []LoggerOption{WithLevelColors(map[Level]Color{
+                Debug: ColorYellow,
+                Info:  ColorBlue,
+                Warn:  ColorGreen,
             }),
                 WithColorization(true)},
             msg:      "test",
-            msgLevel: level.Warn,
-            want:     color.Green.Colorize("test"),
+            msgLevel: Warn,
+            want:     ColorGreen.Colorize("test"),
         },
         {
             name: "With partial level colors gets default",
-            options: []LoggerOption{WithLevelColors(map[level.Level]color.Color{
-                level.Debug: color.Yellow,
-                level.Info:  color.Blue,
-                level.Warn:  color.Green,
+            options: []LoggerOption{WithLevelColors(map[Level]Color{
+                Debug: ColorYellow,
+                Info:  ColorBlue,
+                Warn:  ColorGreen,
             }),
                 WithColorization(true)},
             msg:      "test",
-            msgLevel: level.Error,
-            want:     color.Red.Colorize("test"),
+            msgLevel: Error,
+            want:     ColorRed.Colorize("test"),
         },
     }
     for _, tt := range tests {
@@ -113,21 +109,21 @@ func TestWithMinLevel(t *testing.T) {
         name     string
         options  []LoggerOption
         msg      string
-        msgLevel level.Level
+        msgLevel Level
         want     string
     }{
         {
             name:     "WithMinLevel(level.Debug), debug shows up",
-            options:  []LoggerOption{WithMinLevel(level.Debug)},
+            options:  []LoggerOption{WithMinLevel(Debug)},
             msg:      "test",
-            msgLevel: level.Debug,
+            msgLevel: Debug,
             want:     "test",
         },
         {
             name:     "WithMinLevel(level.Info), debug doesn't show up",
-            options:  []LoggerOption{WithMinLevel(level.Info)},
+            options:  []LoggerOption{WithMinLevel(Info)},
             msg:      "test",
-            msgLevel: level.Debug,
+            msgLevel: Debug,
             want:     "",
         },
     }
@@ -143,21 +139,21 @@ func TestWithPrefixFields(t *testing.T) {
         name     string
         options  []LoggerOption
         msg      string
-        msgLevel level.Level
+        msgLevel Level
         want     string
     }{
         {
             name:     "WithPrefixFields()",
-            options:  []LoggerOption{WithPrefixFields(field.NewLevelField(bracket.Angle))},
+            options:  []LoggerOption{WithPrefixFields(NewLevelField(BracketAngle))},
             msg:      "test",
-            msgLevel: level.Warn,
+            msgLevel: Warn,
             want:     "<WARN> test",
         },
         {
             name:     "Multiple Prefix Fields",
-            options:  []LoggerOption{WithPrefixFields(field.NewLevelField(bracket.Angle), field.NewTagField("tag"))},
+            options:  []LoggerOption{WithPrefixFields(NewLevelField(BracketAngle), NewTagField("tag"))},
             msg:      "test",
-            msgLevel: level.Warn,
+            msgLevel: Warn,
             want:     "<WARN> [tag] test",
         },
     }
@@ -173,21 +169,21 @@ func TestWithSilent(t *testing.T) {
         name     string
         options  []LoggerOption
         msg      string
-        msgLevel level.Level
+        msgLevel Level
         want     string
     }{
         {
             name:     "WithSilent(true), error doesn't show up",
             options:  []LoggerOption{WithSilent(true)},
             msg:      "test",
-            msgLevel: level.Error,
+            msgLevel: Error,
             want:     "",
         },
         {
             name:     "WithSilent(false), error shows up",
             options:  []LoggerOption{WithSilent(false)},
             msg:      "test",
-            msgLevel: level.Error,
+            msgLevel: Error,
             want:     "test",
         },
     }
@@ -203,21 +199,21 @@ func TestWithSuffixFields(t *testing.T) {
         name     string
         options  []LoggerOption
         msg      string
-        msgLevel level.Level
+        msgLevel Level
         want     string
     }{
         {
             name:     "WithPrefixFields()",
-            options:  []LoggerOption{WithSuffixFields(field.NewLevelField(bracket.Angle))},
+            options:  []LoggerOption{WithSuffixFields(NewLevelField(BracketAngle))},
             msg:      "test",
-            msgLevel: level.Warn,
+            msgLevel: Warn,
             want:     "test <WARN>",
         },
         {
             name:     "Multiple Prefix Fields",
-            options:  []LoggerOption{WithSuffixFields(field.NewLevelField(bracket.Angle), field.NewTagField("tag"))},
+            options:  []LoggerOption{WithSuffixFields(NewLevelField(BracketAngle), NewTagField("tag"))},
             msg:      "test",
-            msgLevel: level.Warn,
+            msgLevel: Warn,
             want:     "test <WARN> [tag]",
         },
     }

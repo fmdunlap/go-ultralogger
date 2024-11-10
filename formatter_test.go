@@ -1,31 +1,27 @@
-package formatter
+package ultralogger
 
 import (
     "errors"
-    "github.com/fmdunlap/go-ultralogger/v2/bracket"
-    "github.com/fmdunlap/go-ultralogger/v2/color"
-    "github.com/fmdunlap/go-ultralogger/v2/field"
-    "github.com/fmdunlap/go-ultralogger/v2/level"
     "testing"
 )
 
 type invalidField struct{}
 
-func (f invalidField) FieldPrinter() (field.FieldPrinterFunc, error) {
+func (f invalidField) FieldPrinter() (FieldPrinterFunc, error) {
     return nil, errors.New("invalid field")
 }
 
 func Test_ultraFormatter_Format(t *testing.T) {
     type args struct {
-        level level.Level
+        level Level
         msg   string
     }
     tests := []struct {
         name         string
-        prefixFields []field.Field
-        suffixFields []field.Field
+        prefixFields []Field
+        suffixFields []Field
         enableColor  bool
-        levelColors  map[level.Level]color.Color
+        levelColors  map[Level]Color
         args         args
         want         string
         wantErr      bool
@@ -33,31 +29,31 @@ func Test_ultraFormatter_Format(t *testing.T) {
         {
             name: "Default",
             args: args{
-                level: level.Info,
+                level: Info,
                 msg:   "test",
             },
             want: "[tag] <INFO> test",
-            prefixFields: []field.Field{
-                field.NewTagField("tag"),
-                field.NewLevelField(bracket.Angle),
+            prefixFields: []Field{
+                NewTagField("tag"),
+                NewLevelField(BracketAngle),
             },
         },
         {
             name: "Suffix Fields",
             args: args{
-                level: level.Info,
+                level: Info,
                 msg:   "test",
             },
             want: "test [tag] <INFO>",
-            suffixFields: []field.Field{
-                field.NewTagField("tag"),
-                field.NewLevelField(bracket.Angle),
+            suffixFields: []Field{
+                NewTagField("tag"),
+                NewLevelField(BracketAngle),
             },
         },
         {
             name: "No Fields",
             args: args{
-                level: level.Info,
+                level: Info,
                 msg:   "test",
             },
             want: "test",
@@ -65,10 +61,10 @@ func Test_ultraFormatter_Format(t *testing.T) {
         {
             name: "Invalid prefix field throws error",
             args: args{
-                level: level.Info,
+                level: Info,
                 msg:   "test",
             },
-            prefixFields: []field.Field{
+            prefixFields: []Field{
                 invalidField{},
             },
             wantErr: true,
@@ -76,10 +72,10 @@ func Test_ultraFormatter_Format(t *testing.T) {
         {
             name: "Invalid suffix field throws error",
             args: args{
-                level: level.Info,
+                level: Info,
                 msg:   "test",
             },
-            suffixFields: []field.Field{
+            suffixFields: []Field{
                 invalidField{},
             },
             wantErr: true,
@@ -87,42 +83,42 @@ func Test_ultraFormatter_Format(t *testing.T) {
         {
             name: "Colorize",
             args: args{
-                level: level.Info,
+                level: Info,
                 msg:   "test",
             },
             enableColor: true,
-            levelColors: map[level.Level]color.Color{
-                level.Debug: color.White,
-                level.Info:  color.Green,
-                level.Warn:  color.Yellow,
-                level.Error: color.Red,
-                level.Panic: color.Magenta,
+            levelColors: map[Level]Color{
+                Debug: ColorWhite,
+                Info:  ColorGreen,
+                Warn:  ColorYellow,
+                Error: ColorRed,
+                Panic: ColorMagenta,
             },
-            want: color.Green.Colorize("test"),
+            want: ColorGreen.Colorize("test"),
         },
         {
             name: "Colorize fields",
             args: args{
-                level: level.Error,
+                level: Error,
                 msg:   "test",
             },
             enableColor: true,
-            levelColors: map[level.Level]color.Color{
-                level.Debug: color.White,
-                level.Info:  color.Green,
-                level.Warn:  color.Yellow,
-                level.Error: color.Red,
-                level.Panic: color.Magenta,
+            levelColors: map[Level]Color{
+                Debug: ColorWhite,
+                Info:  ColorGreen,
+                Warn:  ColorYellow,
+                Error: ColorRed,
+                Panic: ColorMagenta,
             },
-            prefixFields: []field.Field{
-                field.NewTagField("tag"),
-                field.NewLevelField(bracket.Angle),
+            prefixFields: []Field{
+                NewTagField("tag"),
+                NewLevelField(BracketAngle),
             },
-            suffixFields: []field.Field{
-                field.NewTagField("tag"),
-                field.NewLevelField(bracket.Angle),
+            suffixFields: []Field{
+                NewTagField("tag"),
+                NewLevelField(BracketAngle),
             },
-            want: color.Red.Colorize("[tag] <ERROR> test [tag] <ERROR>"),
+            want: ColorRed.Colorize("[tag] <ERROR> test [tag] <ERROR>"),
         },
     }
     for _, tt := range tests {
@@ -148,14 +144,14 @@ func Test_ultraFormatter_Format(t *testing.T) {
 
 func Test_ultraFormatter_Formatf(t *testing.T) {
     type args struct {
-        level  level.Level
+        level  Level
         format string
         args   []any
     }
     tests := []struct {
         name         string
-        prefixFields []field.Field
-        suffixFields []field.Field
+        prefixFields []Field
+        suffixFields []Field
         args         args
         want         string
         wantErr      bool
@@ -163,13 +159,13 @@ func Test_ultraFormatter_Formatf(t *testing.T) {
         {
             name: "Default",
             args: args{
-                level:  level.Info,
+                level:  Info,
                 format: "%v %v",
                 args:   []any{"test", "test"},
             },
-            prefixFields: []field.Field{
-                field.NewTagField("tag"),
-                field.NewLevelField(bracket.Angle),
+            prefixFields: []Field{
+                NewTagField("tag"),
+                NewLevelField(BracketAngle),
             },
             want: "[tag] <INFO> test test",
         },
@@ -197,12 +193,12 @@ func Test_ultraFormatter_SetFields(t *testing.T) {
     tests := []struct {
         name                    string
         formatter               Formatter
-        initPrefixFields        []field.Field
-        initSuffixFields        []field.Field
-        newPrefixFields         []field.Field
-        newSuffixFields         []field.Field
+        initPrefixFields        []Field
+        initSuffixFields        []Field
+        newPrefixFields         []Field
+        newSuffixFields         []Field
         msg                     string
-        logLevel                level.Level
+        logLevel                Level
         before                  string
         want                    string
         wantSetPrefixFieldError bool
@@ -210,95 +206,95 @@ func Test_ultraFormatter_SetFields(t *testing.T) {
     }{
         {
             name: "SetPrefixFields",
-            initPrefixFields: []field.Field{
-                field.NewTagField("tag"),
-                field.NewLevelField(bracket.Angle),
+            initPrefixFields: []Field{
+                NewTagField("tag"),
+                NewLevelField(BracketAngle),
             },
-            initSuffixFields: []field.Field{},
-            newPrefixFields: []field.Field{
-                field.NewTagField("newTag", field.WithBracket(bracket.Round)),
+            initSuffixFields: []Field{},
+            newPrefixFields: []Field{
+                NewTagField("newTag", WithBracket(BracketRound)),
             },
             msg:      "test",
-            logLevel: level.Info,
+            logLevel: Info,
             before:   "[tag] <INFO> test",
             want:     "(newTag) test",
         },
         {
             name:             "SetSuffixFields",
-            initPrefixFields: []field.Field{},
-            initSuffixFields: []field.Field{
-                field.NewTagField("tag"),
-                field.NewLevelField(bracket.Angle),
+            initPrefixFields: []Field{},
+            initSuffixFields: []Field{
+                NewTagField("tag"),
+                NewLevelField(BracketAngle),
             },
-            newPrefixFields: []field.Field{},
-            newSuffixFields: []field.Field{
-                field.NewTagField("newTag", field.WithBracket(bracket.Round)),
+            newPrefixFields: []Field{},
+            newSuffixFields: []Field{
+                NewTagField("newTag", WithBracket(BracketRound)),
             },
             msg:      "test",
-            logLevel: level.Info,
+            logLevel: Info,
             before:   "test [tag] <INFO>",
             want:     "test (newTag)",
         },
         {
             name:             "SetPrefixFields with existing suffix fields",
-            initPrefixFields: []field.Field{},
-            initSuffixFields: []field.Field{
-                field.NewTagField("tag"),
-                field.NewLevelField(bracket.Angle),
+            initPrefixFields: []Field{},
+            initSuffixFields: []Field{
+                NewTagField("tag"),
+                NewLevelField(BracketAngle),
             },
-            newPrefixFields: []field.Field{
-                field.NewTagField("newTag", field.WithBracket(bracket.Round)),
+            newPrefixFields: []Field{
+                NewTagField("newTag", WithBracket(BracketRound)),
             },
             newSuffixFields: nil,
             msg:             "test",
-            logLevel:        level.Info,
+            logLevel:        Info,
             before:          "test [tag] <INFO>",
             want:            "(newTag) test [tag] <INFO>",
         },
         {
             name: "SetSuffixFields with existing prefix fields",
-            initPrefixFields: []field.Field{
-                field.NewTagField("tag"),
-                field.NewLevelField(bracket.Angle),
+            initPrefixFields: []Field{
+                NewTagField("tag"),
+                NewLevelField(BracketAngle),
             },
-            initSuffixFields: []field.Field{},
+            initSuffixFields: []Field{},
             newPrefixFields:  nil,
-            newSuffixFields: []field.Field{
-                field.NewTagField("newTag", field.WithBracket(bracket.Round)),
+            newSuffixFields: []Field{
+                NewTagField("newTag", WithBracket(BracketRound)),
             },
             msg:      "test",
-            logLevel: level.Info,
+            logLevel: Info,
             before:   "[tag] <INFO> test",
             want:     "[tag] <INFO> test (newTag)",
         },
         {
             name: "SetPrefixField with invalid field throws error",
-            initPrefixFields: []field.Field{
-                field.NewTagField("tag"),
-                field.NewLevelField(bracket.Angle),
+            initPrefixFields: []Field{
+                NewTagField("tag"),
+                NewLevelField(BracketAngle),
             },
-            initSuffixFields: []field.Field{},
-            newPrefixFields: []field.Field{
+            initSuffixFields: []Field{},
+            newPrefixFields: []Field{
                 invalidField{},
             },
             msg:                     "test",
-            logLevel:                level.Info,
+            logLevel:                Info,
             before:                  "[tag] <INFO> test",
             want:                    "[tag] <INFO> test",
             wantSetPrefixFieldError: true,
         },
         {
             name:             "SetSuffixField with invalid field throws error",
-            initPrefixFields: []field.Field{},
-            initSuffixFields: []field.Field{
-                field.NewTagField("tag"),
-                field.NewLevelField(bracket.Angle),
+            initPrefixFields: []Field{},
+            initSuffixFields: []Field{
+                NewTagField("tag"),
+                NewLevelField(BracketAngle),
             },
-            newSuffixFields: []field.Field{
+            newSuffixFields: []Field{
                 invalidField{},
             },
             msg:                     "test",
-            logLevel:                level.Info,
+            logLevel:                Info,
             before:                  "test [tag] <INFO>",
             wantSetSuffixFieldError: true,
         },

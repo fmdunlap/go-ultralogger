@@ -2,10 +2,6 @@ package ultralogger
 
 import (
     "errors"
-    "github.com/fmdunlap/go-ultralogger/v2/bracket"
-    "github.com/fmdunlap/go-ultralogger/v2/field"
-    "github.com/fmdunlap/go-ultralogger/v2/formatter"
-    "github.com/fmdunlap/go-ultralogger/v2/level"
     "os"
 )
 
@@ -15,10 +11,10 @@ import (
 // to the loggers formatting settings.
 type Logger interface {
     // Log logs at the specified level without formatting.
-    Log(level level.Level, msg string)
+    Log(level Level, msg string)
 
     // Logf logs at the specified level with formatted message.
-    Logf(level level.Level, format string, args ...any)
+    Logf(level Level, format string, args ...any)
 
     // Debug logs a debug-level message.
     Debug(msg string)
@@ -51,29 +47,29 @@ type Logger interface {
     Panicf(format string, args ...any)
 
     // Slog returns the string representation of a log message with the given level and message.
-    Slog(level level.Level, msg string) string
+    Slog(level Level, msg string) string
 
     // Slogf returns the string representation of a formatted log message with the given level and sprint string.
-    Slogf(level level.Level, format string, args ...any) string
+    Slogf(level Level, format string, args ...any) string
 
     // Slogln returns the string representation of a log message with the given level and message, followed by a newline.
-    Slogln(level level.Level, msg string) string
+    Slogln(level Level, msg string) string
 
     // SetMinLevel sets the minimum logging level that will be output.
-    SetMinLevel(level level.Level)
+    SetMinLevel(level Level)
 }
 
 var defaultDateTimeFormat = "2006-01-02 15:04:05"
-var defaultLevelBracket = bracket.Angle
+var defaultLevelBracket = BracketAngle
 
-var defaultPrefixFields = []field.Field{
-    field.NewDateTimeField(defaultDateTimeFormat),
-    field.NewLevelField(defaultLevelBracket),
+var defaultPrefixFields = []Field{
+    NewDateTimeField(defaultDateTimeFormat),
+    NewLevelField(defaultLevelBracket),
 }
 
 // NewLogger returns a new Logger that writes to stdout
 func NewLogger(opts ...LoggerOption) (Logger, error) {
-    fmtr, _ := formatter.NewColorizedFormatter(
+    fmtr, _ := NewColorizedFormatter(
         defaultPrefixFields,
         nil,
         false,
@@ -81,7 +77,7 @@ func NewLogger(opts ...LoggerOption) (Logger, error) {
 
     l := &ultraLogger{
         writer:            os.Stdout,
-        minLevel:          level.Info,
+        minLevel:          Info,
         formatter:         fmtr,
         silent:            false,
         fallback:          true,

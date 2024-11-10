@@ -2,23 +2,21 @@ package ultralogger
 
 import (
     "fmt"
-    "github.com/fmdunlap/go-ultralogger/v2/formatter"
-    "github.com/fmdunlap/go-ultralogger/v2/level"
     "io"
     "os"
 )
 
 type ultraLogger struct {
     writer            io.Writer
-    minLevel          level.Level
-    formatter         formatter.Formatter
+    minLevel          Level
+    formatter         Formatter
     silent            bool
     fallback          bool
     panicOnPanicLevel bool
 }
 
 // Log logs a message with the given level and message.
-func (l *ultraLogger) Log(level level.Level, msg string) {
+func (l *ultraLogger) Log(level Level, msg string) {
     outBytes := []byte(l.Slogln(level, msg))
 
     if _, err := l.writer.Write(outBytes); err != nil {
@@ -27,53 +25,53 @@ func (l *ultraLogger) Log(level level.Level, msg string) {
 }
 
 // Logf logs a formatted message with the given level and sprint string.
-func (l *ultraLogger) Logf(level level.Level, format string, args ...any) {
+func (l *ultraLogger) Logf(level Level, format string, args ...any) {
     l.Log(level, fmt.Sprintf(format, args...))
 }
 
 // Debug logs a message with the Debug level and message.
 func (l *ultraLogger) Debug(msg string) {
-    l.Log(level.Debug, msg)
+    l.Log(Debug, msg)
 }
 
 // Debugf logs a formatted message with the Debug level and sprint string.
 func (l *ultraLogger) Debugf(format string, args ...any) {
-    l.Logf(level.Debug, format, args...)
+    l.Logf(Debug, format, args...)
 }
 
 // Info logs a message with the Info level and message.
 func (l *ultraLogger) Info(msg string) {
-    l.Log(level.Info, msg)
+    l.Log(Info, msg)
 }
 
 // Infof logs a formatted message with the Info level and sprint string.
 func (l *ultraLogger) Infof(format string, args ...any) {
-    l.Logf(level.Info, format, args...)
+    l.Logf(Info, format, args...)
 }
 
 // Warn logs a message with the Warn level and message.
 func (l *ultraLogger) Warn(msg string) {
-    l.Log(level.Warn, msg)
+    l.Log(Warn, msg)
 }
 
 // Warnf logs a formatted message with the Warn level and sprint string.
 func (l *ultraLogger) Warnf(format string, args ...any) {
-    l.Logf(level.Warn, format, args...)
+    l.Logf(Warn, format, args...)
 }
 
 // Error logs a message with the Error level and message.
 func (l *ultraLogger) Error(msg string) {
-    l.Log(level.Error, msg)
+    l.Log(Error, msg)
 }
 
 // Errorf logs a formatted message with the Error level and sprint string.
 func (l *ultraLogger) Errorf(format string, args ...any) {
-    l.Logf(level.Error, format, args...)
+    l.Logf(Error, format, args...)
 }
 
 // Panic logs a message with the Panic level and message. If panicOnPanicLevel is true, it panics.
 func (l *ultraLogger) Panic(msg string) {
-    l.Log(level.Panic, msg)
+    l.Log(Panic, msg)
 
     if l.panicOnPanicLevel {
         panic(msg)
@@ -82,7 +80,7 @@ func (l *ultraLogger) Panic(msg string) {
 
 // Panicf logs a formatted message with the Panic level and sprint string. If panicOnPanicLevel is true, it panics.
 func (l *ultraLogger) Panicf(format string, args ...any) {
-    l.Logf(level.Panic, format, args...)
+    l.Logf(Panic, format, args...)
 
     if l.panicOnPanicLevel {
         panic(fmt.Sprintf(format, args...))
@@ -90,7 +88,7 @@ func (l *ultraLogger) Panicf(format string, args ...any) {
 }
 
 // Slog returns the string representation of a log message with the given level and message.
-func (l *ultraLogger) Slog(level level.Level, msg string) string {
+func (l *ultraLogger) Slog(level Level, msg string) string {
     if l.silent || level < l.minLevel {
         return ""
     }
@@ -99,7 +97,7 @@ func (l *ultraLogger) Slog(level level.Level, msg string) string {
 }
 
 // Slogf returns the string representation of a formatted log message with the given level and sprint string.
-func (l *ultraLogger) Slogf(level level.Level, format string, args ...any) string {
+func (l *ultraLogger) Slogf(level Level, format string, args ...any) string {
     // Optimize-out the Sprintf if the level is too low or silent.
     if l.silent || level < l.minLevel {
         return ""
@@ -109,7 +107,7 @@ func (l *ultraLogger) Slogf(level level.Level, format string, args ...any) strin
 }
 
 // Slogln returns the string representation of a log message with the given level and message, followed by a newline.
-func (l *ultraLogger) Slogln(level level.Level, msg string) string {
+func (l *ultraLogger) Slogln(level Level, msg string) string {
     // Optimize-out the Sprintf if the level is too low or silent.
     if l.silent || level < l.minLevel {
         return ""
@@ -118,20 +116,20 @@ func (l *ultraLogger) Slogln(level level.Level, msg string) string {
     return l.formatter.Format(level, msg) + "\n"
 }
 
-func (l *ultraLogger) SetMinLevel(level level.Level) {
+func (l *ultraLogger) SetMinLevel(level Level) {
     l.minLevel = level
 }
 
 // handleLogWriterError handles errors that occur while writing to the output. On failure, the log will fall back to
 // writing to os.Stdout.
-func (l *ultraLogger) handleLogWriterError(msgLevel level.Level, msg string, err error) {
+func (l *ultraLogger) handleLogWriterError(msgLevel Level, msg string, err error) {
     if !l.fallback || l.writer == os.Stdout {
         panic(err)
     }
 
     l.writer = os.Stdout
     l.Logf(
-        level.Error,
+        Error,
         "error writing to original log writer, falling back to stdout: %v",
         err,
     )
