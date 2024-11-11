@@ -1,11 +1,12 @@
 package ultralogger
 
-type FieldPrinterFunc func(PrintArgs) string
-
-type PrintArgs struct {
-    Level Level
-}
-
 type Field interface {
-    FieldPrinter() (FieldPrinterFunc, error)
+    FieldFormatter() (FieldFormatter, error)
 }
+
+type FieldResult struct {
+    Name string
+    Data any
+}
+
+type FieldFormatter func(mCtx LogLineContext, outputFormat OutputFormat, data any) *FieldResult

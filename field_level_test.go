@@ -8,14 +8,14 @@ func TestLevelField_FieldPrinter(t *testing.T) {
     tests := []struct {
         name       string
         levelField Field
-        printArgs  PrintArgs
+        llCtx      LogLineContext
         want       string
         wantErr    bool
     }{
         {
             name:       "Default",
             levelField: NewLevelField(BracketAngle),
-            printArgs: PrintArgs{
+            llCtx: LogLineContext{
                 Level: Info,
             },
             want: "<INFO>",
@@ -23,7 +23,7 @@ func TestLevelField_FieldPrinter(t *testing.T) {
         {
             name:       "Round Bracket",
             levelField: NewLevelField(BracketRound),
-            printArgs: PrintArgs{
+            llCtx: LogLineContext{
                 Level: Info,
             },
             want: "(INFO)",
@@ -31,7 +31,7 @@ func TestLevelField_FieldPrinter(t *testing.T) {
         {
             name:       "Debug",
             levelField: NewLevelField(BracketAngle),
-            printArgs: PrintArgs{
+            llCtx: LogLineContext{
                 Level: Debug,
             },
             want: "<DEBUG>",
@@ -39,7 +39,7 @@ func TestLevelField_FieldPrinter(t *testing.T) {
         {
             name:       "Warn",
             levelField: NewLevelField(BracketAngle),
-            printArgs: PrintArgs{
+            llCtx: LogLineContext{
                 Level: Warn,
             },
             want: "<WARN>",
@@ -47,7 +47,7 @@ func TestLevelField_FieldPrinter(t *testing.T) {
         {
             name:       "Error",
             levelField: NewLevelField(BracketAngle),
-            printArgs: PrintArgs{
+            llCtx: LogLineContext{
                 Level: Error,
             },
             want: "<ERROR>",
@@ -55,7 +55,7 @@ func TestLevelField_FieldPrinter(t *testing.T) {
         {
             name:       "Panic",
             levelField: NewLevelField(BracketAngle),
-            printArgs: PrintArgs{
+            llCtx: LogLineContext{
                 Level: Panic,
             },
             want: "<PANIC>",
@@ -63,14 +63,14 @@ func TestLevelField_FieldPrinter(t *testing.T) {
     }
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
-            got, err := tt.levelField.FieldPrinter()
+            got, err := tt.levelField.FieldFormatter()
             if (err != nil) != tt.wantErr {
-                t.Errorf("FieldPrinter() error = %v, wantErr %v", err, tt.wantErr)
+                t.Errorf("FieldFormatter() error = %v, wantErr %v", err, tt.wantErr)
                 return
             }
 
-            if got(tt.printArgs) != tt.want {
-                t.Errorf("FieldPrinter() got = %v, want %v", got(tt.printArgs), tt.want)
+            if got(tt.llCtx, OutputFormatText, nil).Data != tt.want {
+                t.Errorf("FieldFormatter() got = %v, want %v", got(tt.llCtx, OutputFormatText, nil).Data, tt.want)
             }
         })
     }

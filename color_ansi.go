@@ -79,8 +79,8 @@ func (ac AnsiColor) SlowBlink() AnsiColor {
 
 // TODO: Benchmark different ways of doing this.
 // Went for the single buffer approach for now.
-func (ac AnsiColor) Colorize(str string) string {
-    buf := make([]byte, ac.totalBufferLength(str))
+func (ac AnsiColor) Colorize(content []byte) []byte {
+    buf := make([]byte, ac.totalBufferLength(content))
     cursor := 0
 
     copy(buf, ansiCSInit)
@@ -105,16 +105,16 @@ func (ac AnsiColor) Colorize(str string) string {
     buf[cursor] = ansiCSEnd
     cursor++
 
-    copy(buf[cursor:], str)
-    cursor += len(str)
+    copy(buf[cursor:], content)
+    cursor += len(content)
 
     copy(buf[cursor:], ansiReset)
     cursor += len(ansiReset)
 
-    return string(buf)
+    return buf
 }
 
-func (ac AnsiColor) totalBufferLength(input string) int {
+func (ac AnsiColor) totalBufferLength(content []byte) int {
     settingsLength := 0
     for _, setting := range ac.settings {
         settingsLength += len(setting) + 1
@@ -124,5 +124,5 @@ func (ac AnsiColor) totalBufferLength(input string) int {
         backgroundLength = len(ac.background) + 1
     }
 
-    return len(ansiCSInit) + settingsLength + backgroundLength + len(ac.code) + 1 + len(input) + len(ansiReset)
+    return len(ansiCSInit) + settingsLength + backgroundLength + len(ac.code) + 1 + len(content) + len(ansiReset)
 }

@@ -15,7 +15,7 @@ func TestDateTimeField_FieldPrinter(t *testing.T) {
     tests := []struct {
         name          string
         dateTimeField Field
-        printArgs     PrintArgs
+        llCtx         LogLineContext
         want          string
         wantErr       bool
     }{
@@ -25,7 +25,7 @@ func TestDateTimeField_FieldPrinter(t *testing.T) {
                 dateTimeFormat: "2006-01-02 15:04:05",
                 clock:          mockClock{},
             },
-            printArgs: PrintArgs{
+            llCtx: LogLineContext{
                 Level: Info,
             },
             want: "2024-11-07 19:30:00",
@@ -36,7 +36,7 @@ func TestDateTimeField_FieldPrinter(t *testing.T) {
                 dateTimeFormat: "15:04:05",
                 clock:          mockClock{},
             },
-            printArgs: PrintArgs{
+            llCtx: LogLineContext{
                 Level: Info,
             },
             want: "19:30:00",
@@ -47,7 +47,7 @@ func TestDateTimeField_FieldPrinter(t *testing.T) {
                 dateTimeFormat: "2006-01-02",
                 clock:          mockClock{},
             },
-            printArgs: PrintArgs{
+            llCtx: LogLineContext{
                 Level: Info,
             },
             want: "2024-11-07",
@@ -58,7 +58,7 @@ func TestDateTimeField_FieldPrinter(t *testing.T) {
                 dateTimeFormat: "2006-01-02 15:04:05",
                 clock:          mockClock{},
             }).SetDateTimeFormat("06/01/02"),
-            printArgs: PrintArgs{
+            llCtx: LogLineContext{
                 Level: Info,
             },
             want: "24/11/07",
@@ -66,14 +66,14 @@ func TestDateTimeField_FieldPrinter(t *testing.T) {
     }
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
-            got, err := tt.dateTimeField.FieldPrinter()
+            got, err := tt.dateTimeField.FieldFormatter()
             if (err != nil) != tt.wantErr {
-                t.Errorf("FieldPrinter() error = %v, wantErr %v", err, tt.wantErr)
+                t.Errorf("FieldFormatter() error = %v, wantErr %v", err, tt.wantErr)
                 return
             }
 
-            if got(tt.printArgs) != tt.want {
-                t.Errorf("FieldPrinter() got = %v, want %v", got(tt.printArgs), tt.want)
+            if got(tt.llCtx, OutputFormatText, nil).Data != tt.want {
+                t.Errorf("FieldFormatter() got = %v, want %v", got(tt.llCtx, OutputFormatText, nil), tt.want)
             }
         })
     }

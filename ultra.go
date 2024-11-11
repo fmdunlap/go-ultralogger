@@ -7,131 +7,112 @@ import (
 )
 
 type ultraLogger struct {
-    writer            io.Writer
     minLevel          Level
-    formatter         Formatter
+    destinations      map[io.Writer]LogLineFormatter
+    tag               string
     silent            bool
     fallback          bool
     panicOnPanicLevel bool
 }
 
-// Log logs a message with the given level and message.
-func (l *ultraLogger) Log(level Level, msg string) {
-    outBytes := []byte(l.Slogln(level, msg))
-
-    if _, err := l.writer.Write(outBytes); err != nil {
-        l.handleLogWriterError(level, msg, err)
+func newUltraLogger() *ultraLogger {
+    return &ultraLogger{
+        minLevel:          Info,
+        destinations:      map[io.Writer]LogLineFormatter{},
+        silent:            false,
+        fallback:          true,
+        panicOnPanicLevel: false,
     }
 }
 
-// Logf logs a formatted message with the given level and sprint string.
-func (l *ultraLogger) Logf(level Level, format string, args ...any) {
-    l.Log(level, fmt.Sprintf(format, args...))
+func (l *ultraLogger) writeLogLine(writer io.Writer, formatter LogLineFormatter, logLineContext LogLineContext, data any) {
+    if formatter == nil {
+        return
+    }
+
+    outBytes, err := formatter.FormatLogLine(logLineContext, data)
+
+    if err != nil {
+        l.Error(fmt.Sprintf("failed to format log line. formatter=%v, data=%v, err=%v", formatter, data, err))
+        return
+    }
+
+    if len(outBytes) == 0 {
+        return
+    }
+
+    if _, err := writer.Write(fmt.Append(outBytes, "\n")); err != nil {
+        l.handleLogWriterError(writer, logLineContext.Level, data, err)
+    }
+}
+
+// Log logs a message with the given level and message.
+func (l *ultraLogger) Log(level Level, data any) {
+    if l.silent || level < l.minLevel {
+        return
+    }
+
+    loglineContext := LogLineContext{
+        Level: level,
+        Tag:   l.tag,
+    }
+
+    for writer, formatter := range l.destinations {
+        go l.writeLogLine(writer, formatter, loglineContext, data)
+    }
 }
 
 // Debug logs a message with the Debug level and message.
-func (l *ultraLogger) Debug(msg string) {
-    l.Log(Debug, msg)
-}
-
-// Debugf logs a formatted message with the Debug level and sprint string.
-func (l *ultraLogger) Debugf(format string, args ...any) {
-    l.Logf(Debug, format, args...)
+func (l *ultraLogger) Debug(data any) {
+    l.Log(Debug, data)
 }
 
 // Info logs a message with the Info level and message.
-func (l *ultraLogger) Info(msg string) {
-    l.Log(Info, msg)
-}
-
-// Infof logs a formatted message with the Info level and sprint string.
-func (l *ultraLogger) Infof(format string, args ...any) {
-    l.Logf(Info, format, args...)
+func (l *ultraLogger) Info(data any) {
+    l.Log(Info, data)
 }
 
 // Warn logs a message with the Warn level and message.
-func (l *ultraLogger) Warn(msg string) {
-    l.Log(Warn, msg)
-}
-
-// Warnf logs a formatted message with the Warn level and sprint string.
-func (l *ultraLogger) Warnf(format string, args ...any) {
-    l.Logf(Warn, format, args...)
+func (l *ultraLogger) Warn(data any) {
+    l.Log(Warn, data)
 }
 
 // Error logs a message with the Error level and message.
-func (l *ultraLogger) Error(msg string) {
-    l.Log(Error, msg)
-}
-
-// Errorf logs a formatted message with the Error level and sprint string.
-func (l *ultraLogger) Errorf(format string, args ...any) {
-    l.Logf(Error, format, args...)
+func (l *ultraLogger) Error(data any) {
+    l.Log(Error, data)
 }
 
 // Panic logs a message with the Panic level and message. If panicOnPanicLevel is true, it panics.
-func (l *ultraLogger) Panic(msg string) {
-    l.Log(Panic, msg)
+func (l *ultraLogger) Panic(data any) {
+    l.Log(Panic, data)
 
     if l.panicOnPanicLevel {
-        panic(msg)
+        panic(data)
     }
-}
-
-// Panicf logs a formatted message with the Panic level and sprint string. If panicOnPanicLevel is true, it panics.
-func (l *ultraLogger) Panicf(format string, args ...any) {
-    l.Logf(Panic, format, args...)
-
-    if l.panicOnPanicLevel {
-        panic(fmt.Sprintf(format, args...))
-    }
-}
-
-// Slog returns the string representation of a log message with the given level and message.
-func (l *ultraLogger) Slog(level Level, msg string) string {
-    if l.silent || level < l.minLevel {
-        return ""
-    }
-
-    return l.formatter.Format(level, msg)
-}
-
-// Slogf returns the string representation of a formatted log message with the given level and sprint string.
-func (l *ultraLogger) Slogf(level Level, format string, args ...any) string {
-    // Optimize-out the Sprintf if the level is too low or silent.
-    if l.silent || level < l.minLevel {
-        return ""
-    }
-
-    return l.formatter.Formatf(level, format, args...)
-}
-
-// Slogln returns the string representation of a log message with the given level and message, followed by a newline.
-func (l *ultraLogger) Slogln(level Level, msg string) string {
-    // Optimize-out the Sprintf if the level is too low or silent.
-    if l.silent || level < l.minLevel {
-        return ""
-    }
-
-    return l.formatter.Format(level, msg) + "\n"
 }
 
 func (l *ultraLogger) SetMinLevel(level Level) {
     l.minLevel = level
 }
 
+func (l *ultraLogger) SetTag(tag string) {
+    l.tag = tag
+}
+
+func (l *ultraLogger) Silence(enable bool) {
+    l.silent = enable
+}
+
 // handleLogWriterError handles errors that occur while writing to the output. On failure, the log will fall back to
 // writing to os.Stdout.
-func (l *ultraLogger) handleLogWriterError(msgLevel Level, msg string, err error) {
-    if !l.fallback || l.writer == os.Stdout {
+func (l *ultraLogger) handleLogWriterError(writer io.Writer, msgLevel Level, msg any, err error) {
+    if !l.fallback || writer == os.Stdout {
         panic(err)
     }
 
-    l.writer = os.Stdout
-    l.Logf(
-        Error,
-        "error writing to original log writer, falling back to stdout: %v",
-        err,
+    l.destinations[writer] = nil
+    l.Error(
+        fmt.Sprintf("error writing to original log writer, disabling formatter for writer: %v", err),
     )
     l.Log(msgLevel, msg)
 }

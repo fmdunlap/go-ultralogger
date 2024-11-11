@@ -2,16 +2,10 @@ package ultralogger
 
 import (
     "io"
+    "os"
 )
 
 type LoggerOption func(l *ultraLogger) error
-
-func WithDestination(writer io.Writer) LoggerOption {
-    return func(l *ultraLogger) error {
-        l.writer = writer
-        return nil
-    }
-}
 
 func WithMinLevel(level Level) LoggerOption {
     return func(l *ultraLogger) error {
@@ -20,24 +14,34 @@ func WithMinLevel(level Level) LoggerOption {
     }
 }
 
-func WithFormatter(formatter Formatter) LoggerOption {
+// WithStdoutFormatter sets the formatter to use for stdout.
+// Note: This will not overwrite existing, non-stdout destinations, if any.
+func WithStdoutFormatter(formatter LogLineFormatter) LoggerOption {
     return func(l *ultraLogger) error {
-        l.formatter = formatter
+        if l.destinations == nil {
+            l.destinations = map[io.Writer]LogLineFormatter{}
+        }
+
+        l.destinations[os.Stdout] = formatter
         return nil
     }
 }
 
-func WithPrefixFields(fields ...Field) LoggerOption {
+// WithDestination sets the destination for the logger. If the formatter is nil, the destination will be ignored.
+// If the logger already has destinations, this will overwrite them.
+func WithDestination(destination io.Writer, formatter LogLineFormatter) LoggerOption {
     return func(l *ultraLogger) error {
-        // TODO: Handle this error with a custom type.
-        return l.formatter.SetPrefixFields(fields...)
+        l.destinations = map[io.Writer]LogLineFormatter{destination: formatter}
+        return nil
     }
 }
 
-func WithSuffixFields(fields ...Field) LoggerOption {
+// WithDestinations sets the destinations for the logger. If the formatter is nil, the destination will be ignored.
+// If the logger already has destinations, this will overwrite them.
+func WithDestinations(destinations map[io.Writer]LogLineFormatter) LoggerOption {
     return func(l *ultraLogger) error {
-        // TODO: Handle this error with a custom type.
-        return l.formatter.SetSuffixFields(fields...)
+        l.destinations = destinations
+        return nil
     }
 }
 
@@ -62,24 +66,33 @@ func WithPanicOnPanicLevel(panicOnPanicLevel bool) LoggerOption {
     }
 }
 
-func WithColorization(colorize bool) LoggerOption {
+func WithDefaultColorizationEnabled() LoggerOption {
     return func(l *ultraLogger) error {
-        colorizedFormatter, ok := l.formatter.(ColorizedFormatter)
-        if !ok {
-            return ColorizationNotSupportedError
+        if len(l.destinations) == 0 {
+            defaultFormatter, _ := NewFormatter(OutputFormatText, defaultFields)
+            l.destinations = map[io.Writer]LogLineFormatter{os.Stdout: defaultFormatter}
         }
 
-        return colorizedFormatter.EnableColorization(colorize)
+        l.destinations[os.Stdout] = NewColorizedFormatter(l.destinations[os.Stdout], nil)
+        return nil
     }
 }
 
-func WithLevelColors(colors map[Level]Color) LoggerOption {
+func WithCustomColorization(colors map[Level]Color) LoggerOption {
     return func(l *ultraLogger) error {
-        colorizedFormatter, ok := l.formatter.(ColorizedFormatter)
-        if !ok {
-            return ColorizationNotSupportedError
+        if l.destinations == nil {
+            defaultFormatter, _ := NewFormatter(OutputFormatText, defaultFields)
+            l.destinations = map[io.Writer]LogLineFormatter{os.Stdout: defaultFormatter}
         }
 
-        return colorizedFormatter.SetLevelColors(colors)
+        l.destinations[os.Stdout] = NewColorizedFormatter(l.destinations[os.Stdout], colors)
+        return nil
+    }
+}
+
+func WithTag(tag string) LoggerOption {
+    return func(l *ultraLogger) error {
+        l.SetTag(tag)
+        return nil
     }
 }

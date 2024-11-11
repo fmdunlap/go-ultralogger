@@ -11,7 +11,7 @@ type FieldLevel struct {
     levelStrings map[Level]string
 }
 
-func (f *FieldLevel) FieldPrinter() (FieldPrinterFunc, error) {
+func (f *FieldLevel) FieldFormatter() (FieldFormatter, error) {
     if f.levelStrings == nil {
         f.levelStrings = make(map[Level]string)
 
@@ -20,7 +20,20 @@ func (f *FieldLevel) FieldPrinter() (FieldPrinterFunc, error) {
         }
     }
 
-    return func(args PrintArgs) string {
-        return f.levelStrings[args.Level]
-    }, nil
+    return f.format, nil
+}
+
+func (f *FieldLevel) format(mCtx LogLineContext, outputFormat OutputFormat, _ any) *FieldResult {
+    result := &FieldResult{
+        Name: "Level",
+    }
+
+    switch outputFormat {
+    case OutputFormatJSON:
+        result.Data = f.levelStrings[mCtx.Level]
+    case OutputFormatText:
+        result.Data = f.levelStrings[mCtx.Level]
+    }
+
+    return result
 }

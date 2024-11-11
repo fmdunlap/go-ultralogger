@@ -5,10 +5,8 @@ import (
 )
 
 type FieldTag struct {
-    tag            string
-    bracket        Bracket
-    padSettings    *TagPadSettings
-    precomputedTag *string
+    bracket     Bracket
+    padSettings *TagPadSettings
 }
 
 type TagPadSettings struct {
@@ -17,9 +15,8 @@ type TagPadSettings struct {
     SuffixPadSize int
 }
 
-func NewTagField(tag string, opts ...TagFieldOpt) *FieldTag {
+func NewTagField(opts ...TagFieldOpt) *FieldTag {
     tf := &FieldTag{
-        tag:     tag,
         bracket: BracketSquare,
         padSettings: &TagPadSettings{
             PadChar:       " ",
@@ -32,19 +29,26 @@ func NewTagField(tag string, opts ...TagFieldOpt) *FieldTag {
         opt(tf)
     }
 
-    tf.updatePrecomputedTag()
-
     return tf
 }
 
-func (f *FieldTag) FieldPrinter() (FieldPrinterFunc, error) {
-    if f.precomputedTag == nil {
-        f.updatePrecomputedTag()
+func (f *FieldTag) FieldFormatter() (FieldFormatter, error) {
+    return f.format, nil
+}
+
+func (f *FieldTag) format(mCtx LogLineContext, outputFormat OutputFormat, _ any) *FieldResult {
+    result := &FieldResult{
+        Name: "tag",
     }
 
-    return func(info PrintArgs) string {
-        return *f.precomputedTag
-    }, nil
+    switch outputFormat {
+    case OutputFormatJSON:
+        result.Data = mCtx.Tag
+    case OutputFormatText:
+        result.Data = f.tagString(mCtx.Tag)
+    }
+
+    return result
 }
 
 type TagFieldOpt func(tf *FieldTag)
@@ -79,13 +83,8 @@ func WithBracket(bracket Bracket) TagFieldOpt {
     }
 }
 
-func (f *FieldTag) updatePrecomputedTag() {
-    tagStr := f.tagString()
-    f.precomputedTag = &tagStr
-}
-
-func (f *FieldTag) tagString() string {
-    if f.tag == "" {
+func (f *FieldTag) tagString(tag string) string {
+    if tag == "" {
         return ""
     }
 
@@ -94,7 +93,7 @@ func (f *FieldTag) tagString() string {
     b.WriteString(strings.Repeat(f.padSettings.PadChar, f.padSettings.PrefixPadSize))
 
     b.WriteString(f.bracket.Open())
-    b.WriteString(f.tag)
+    b.WriteString(tag)
     b.WriteString(f.bracket.Close())
 
     b.WriteString(strings.Repeat(f.padSettings.PadChar, f.padSettings.SuffixPadSize))
