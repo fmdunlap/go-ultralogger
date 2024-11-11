@@ -1,6 +1,33 @@
 package ultralogger
 
-import "testing"
+import (
+    "fmt"
+    "testing"
+)
+
+func ExampleSimpleBracket_Wrap() {
+    b := SimpleBracket{"<", ">"}
+    fmt.Println(b.Wrap("test"))
+    // Output: <test>
+}
+
+func ExampleSimpleBracket_Open() {
+    b := SimpleBracket{"<", ">"}
+    fmt.Println(b.Open())
+    // Output: <
+}
+
+func ExampleSimpleBracket_Close() {
+    b := SimpleBracket{"<", ">"}
+    fmt.Println(b.Close())
+    // Output: >
+}
+
+func ExampleSimpleBracket() {
+    myBracket := SimpleBracket{"!=", "=!"}
+    fmt.Println(myBracket.Wrap("test"))
+    // Output: !=test=!
+}
 
 func TestSimpleBracket_Close(t *testing.T) {
     type fields struct {
@@ -152,31 +179,31 @@ func TestBracketType_BuiltinWrap(t *testing.T) {
     }{
         {
             name:    "BracketAngle",
-            b:       BracketAngle,
+            b:       Brackets.Angle,
             content: "test",
             want:    "<test>",
         },
         {
             name:    "Square",
-            b:       BracketSquare,
+            b:       Brackets.Square,
             content: "test",
             want:    "[test]",
         },
         {
             name:    "Round",
-            b:       BracketRound,
+            b:       Brackets.Round,
             content: "test",
             want:    "(test)",
         },
         {
             name:    "Curly",
-            b:       BracketCurly,
+            b:       Brackets.Curly,
             content: "test",
             want:    "{test}",
         },
         {
             name:    "None",
-            b:       BracketNone,
+            b:       Brackets.None,
             content: "test",
             want:    "test",
         },

@@ -9,7 +9,7 @@ import (
 // Logger defines the interface for a structured ultraLogger in Go.
 //
 // This interface is useful for either creating your own logger or for using an existing logger, and preventing changes
-// to the loggers formatting settings.
+// to the loggers formatting Settings.
 type Logger interface {
     // Log logs at the specified level without formatting.
     Log(level Level, data any)
@@ -39,14 +39,14 @@ type Logger interface {
 }
 
 var defaultDateTimeFormat = "2006-01-02 15:04:05"
-var defaultLevelBracket = BracketAngle
+var defaultLevelBracket = Brackets.Angle
 
 var defaultCurrentTimeField, _ = NewCurrentTimeField("time", defaultDateTimeFormat)
 
 var defaultFields = []Field{
     defaultCurrentTimeField,
     NewLevelField(defaultLevelBracket),
-    &FieldMessage{},
+    &fieldMessage{},
 }
 
 func NewLoggerWithOptions(opts ...LoggerOption) (Logger, error) {
@@ -58,7 +58,7 @@ func NewLoggerWithOptions(opts ...LoggerOption) (Logger, error) {
         }
     }
 
-    if l.destinations == nil {
+    if len(l.destinations) == 0 {
         defaultFormatter, _ := NewFormatter(OutputFormatText, defaultFields)
         l.destinations = map[io.Writer]LogLineFormatter{os.Stdout: defaultFormatter}
     }
@@ -77,18 +77,18 @@ func NewLogger() Logger {
 
 //NewFileLogger returns a new Logger that writes to a file.
 //
-//If the filename is empty, FileNotSpecifiedError is returned.
-//If the file does not exist, FileNotFoundError is returned.
+//If the filename is empty, ErrorFileNotSpecified is returned.
+//If the file does not exist, ErrorFileNotFound is returned.
 func NewFileLogger(filename string, outputFormat OutputFormat) (Logger, error) {
     if filename == "" {
-        return nil, FileNotSpecifiedError
+        return nil, ErrorFileNotSpecified
     }
 
     var err error
     filePtr, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
     if err != nil {
         if errors.Is(err, os.ErrNotExist) {
-            return nil, &FileNotFoundError{filename: filename}
+            return nil, &ErrorFileNotFound{filename: filename}
         }
         return nil, err
     }

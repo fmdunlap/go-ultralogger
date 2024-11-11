@@ -4,39 +4,58 @@ import (
     "strings"
 )
 
-type FieldTag struct {
+type tagField struct {
     bracket     Bracket
     padSettings *TagPadSettings
 }
 
+// TagPadSettings are the settings for padding a tag field. If PadChar is empty, it will default to a space.
+// Note: for non-text formatters the padding setting may be ignored (it is in the built in JSON formatter).
 type TagPadSettings struct {
-    PadChar       string
+    // PadChar is the character to use for padding. If empty, it will default to a space.
+    PadChar string
+    // PrefixPadSize is the number of times PadChar will be added before the tag.
     PrefixPadSize int
+    // SuffixPadSize is the number of times PadChar will be added after the tag.
     SuffixPadSize int
 }
 
-func NewTagField(opts ...TagFieldOpt) *FieldTag {
-    tf := &FieldTag{
-        bracket: BracketSquare,
-        padSettings: &TagPadSettings{
-            PadChar:       " ",
-            PrefixPadSize: 0,
-            SuffixPadSize: 0,
-        },
+var defaultTagPadSettings = &TagPadSettings{
+    PadChar:       " ",
+    PrefixPadSize: 0,
+    SuffixPadSize: 0,
+}
+
+// NewDefaultTagField returns a new tag field with the default settings.
+//
+// The default settings are square brackets, and no padding.
+func NewDefaultTagField() Field {
+    return NewTagField(Brackets.Square, defaultTagPadSettings)
+}
+
+// NewTagField returns a new tag field with the provided settings.
+func NewTagField(bracket Bracket, padSettings *TagPadSettings) Field {
+    if padSettings == nil {
+        padSettings = defaultTagPadSettings
     }
 
-    for _, opt := range opts {
-        opt(tf)
+    if padSettings.PadChar == "" {
+        padSettings.PadChar = " "
+    }
+
+    tf := &tagField{
+        bracket:     bracket,
+        padSettings: padSettings,
     }
 
     return tf
 }
 
-func (f *FieldTag) FieldFormatter() (FieldFormatter, error) {
+func (f *tagField) NewFieldFormatter() (FieldFormatter, error) {
     return f.format, nil
 }
 
-func (f *FieldTag) format(args LogLineArgs, _ any) (FieldResult, error) {
+func (f *tagField) format(args LogLineArgs, _ any) (FieldResult, error) {
     result := FieldResult{
         Name: "tag",
     }
@@ -51,39 +70,7 @@ func (f *FieldTag) format(args LogLineArgs, _ any) (FieldResult, error) {
     return result, nil
 }
 
-type TagFieldOpt func(tf *FieldTag)
-
-func WithPadSettings(padSettings TagPadSettings) TagFieldOpt {
-    return func(tf *FieldTag) {
-        tf.padSettings = &padSettings
-    }
-}
-
-func WithPadChar(padChar string) TagFieldOpt {
-    return func(tf *FieldTag) {
-        tf.padSettings.PadChar = padChar
-    }
-}
-
-func WithPrefixPadSize(prefixPadSize int) TagFieldOpt {
-    return func(tf *FieldTag) {
-        tf.padSettings.PrefixPadSize = prefixPadSize
-    }
-}
-
-func WithSuffixPadSize(suffixPadSize int) TagFieldOpt {
-    return func(tf *FieldTag) {
-        tf.padSettings.SuffixPadSize = suffixPadSize
-    }
-}
-
-func WithBracket(bracket Bracket) TagFieldOpt {
-    return func(tf *FieldTag) {
-        tf.bracket = bracket
-    }
-}
-
-func (f *FieldTag) tagString(tag string) string {
+func (f *tagField) tagString(tag string) string {
     if tag == "" {
         return ""
     }

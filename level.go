@@ -70,6 +70,6 @@ func ParseLevel(levelStr string) (Level, error) {
     case "panic":
         return Panic, nil
     default:
-        return 0, &LevelParsingError{level: levelStr}
+        return 0, &ErrorLevelParsing{level: levelStr}
     }
 }

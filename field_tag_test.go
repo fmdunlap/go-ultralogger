@@ -14,7 +14,7 @@ func TestTagField_FieldPrinter(t *testing.T) {
     }{
         {
             name:     "Default",
-            tagField: NewTagField(),
+            tagField: NewDefaultTagField(),
             args: LogLineArgs{
                 Level:        Info,
                 Tag:          "test",
@@ -24,7 +24,7 @@ func TestTagField_FieldPrinter(t *testing.T) {
         },
         {
             name:     "With Bracket",
-            tagField: NewTagField(WithBracket(BracketRound)),
+            tagField: NewTagField(Brackets.Round, nil),
             args: LogLineArgs{
                 Level:        Info,
                 Tag:          "test",
@@ -34,17 +34,17 @@ func TestTagField_FieldPrinter(t *testing.T) {
         },
         {
             name:     "With Padding",
-            tagField: NewTagField(WithPadSettings(TagPadSettings{PadChar: "-", PrefixPadSize: 1, SuffixPadSize: 2})),
+            tagField: NewTagField(Brackets.Square, &TagPadSettings{PrefixPadSize: 1, SuffixPadSize: 2}),
             args: LogLineArgs{
                 Level:        Info,
                 Tag:          "test",
                 OutputFormat: OutputFormatText,
             },
-            want: "-[test]--",
+            want: " [test]  ",
         },
         {
             name:     "With Prefix Pad",
-            tagField: NewTagField(WithPrefixPadSize(5)),
+            tagField: NewTagField(Brackets.Square, &TagPadSettings{PrefixPadSize: 5}),
             args: LogLineArgs{
                 Level:        Info,
                 Tag:          "test",
@@ -54,7 +54,7 @@ func TestTagField_FieldPrinter(t *testing.T) {
         },
         {
             name:     "With Suffix Pad",
-            tagField: NewTagField(WithSuffixPadSize(5)),
+            tagField: NewTagField(Brackets.Square, &TagPadSettings{SuffixPadSize: 5}),
             args: LogLineArgs{
                 Level:        Info,
                 Tag:          "test",
@@ -64,31 +64,31 @@ func TestTagField_FieldPrinter(t *testing.T) {
         },
         {
             name:     "With Pad Char",
-            tagField: NewTagField(WithPrefixPadSize(5), WithPadChar("!")),
+            tagField: NewTagField(Brackets.Square, &TagPadSettings{PadChar: "!", PrefixPadSize: 1, SuffixPadSize: 2}),
             args: LogLineArgs{
                 Level:        Info,
                 Tag:          "test",
                 OutputFormat: OutputFormatText,
             },
-            want: "!!!!![test]",
+            want: "![test]!!",
         },
     }
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
-            formatter, err := tt.tagField.FieldFormatter()
+            formatter, err := tt.tagField.NewFieldFormatter()
             if (err != nil) != tt.wantErr {
-                t.Errorf("FieldFormatter() error = %v, wantErr %v", err, tt.wantErr)
+                t.Errorf("NewFieldFormatter() error = %v, wantErr %v", err, tt.wantErr)
                 return
             }
 
             res, err := formatter(tt.args, nil)
             if (err != nil) != tt.wantErr {
-                t.Errorf("FieldFormatter() error = %v, wantErr %v", err, tt.wantErr)
+                t.Errorf("NewFieldFormatter() error = %v, wantErr %v", err, tt.wantErr)
                 return
             }
 
             if res.Data != tt.want {
-                t.Errorf("FieldFormatter() formatted result = %v, want %v", res.Data, tt.want)
+                t.Errorf("NewFieldFormatter() formatted result = %v, want %v", res.Data, tt.want)
             }
         })
     }

@@ -2,46 +2,39 @@ package ultralogger
 
 import (
     "encoding/json"
-    "errors"
 )
 
+// JSONFormatter is a formatter that formats log lines as JSON.
 type JSONFormatter struct {
     Fields                 []Field
     destinationInitialized bool
 }
 
+// TODO: Provide a way to specify behavior on nil data. I.e. if the field should be omitted, or if we should include
+//  a zero value, or something else. This is a bit tricky, because we don't know the type of the data, and we don't
+//  know the type of the field.
+
+// FormatLogLine formats the log line using the provided data and returns a FormatResult which contains the formatted
+// log line and any errors that may have occurred.
 func (f *JSONFormatter) FormatLogLine(args LogLineArgs, data any) FormatResult {
     jsonMap := make(map[string]any)
 
     args.OutputFormat = OutputFormatJSON
 
-FieldLoop:
     for _, field := range f.Fields {
-        fieldFormatter, err := field.FieldFormatter()
+        fieldResult, err := computeFieldResult(field, args, data)
         if err != nil {
-            return FormatResult{nil, &FieldFormatterError{field: field, err: err}}
+            return FormatResult{nil, err}
         }
 
-        fieldResult, err := fieldFormatter(args, data)
-
-        if err != nil {
-            var invalidDataTypeError *InvalidFieldDataTypeError
-            if errors.As(err, &invalidDataTypeError) {
-                continue FieldLoop
-            }
-        }
-
-        if fieldResult.Data == nil {
-            continue FieldLoop
+        // Throw away fields that are nil or have nil data.
+        if fieldResult == nil || fieldResult.Data == nil {
+            continue
         }
 
         jsonMap[fieldResult.Name] = fieldResult.Data
     }
 
     jBytes, err := json.Marshal(jsonMap)
-    if err != nil {
-        return FormatResult{nil, &FieldFormatterError{field: nil, err: err}}
-    }
-
-    return FormatResult{jBytes, nil}
+    return FormatResult{jBytes, err}
 }

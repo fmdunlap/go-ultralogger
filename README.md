@@ -13,9 +13,14 @@ UltraLogger only uses the stdlib and is written in pure Go.
 
 ## Features
 - **Multiple Log Levels**: DEBUG, INFO, WARN, ERROR, PANIC, and FATAL levels.
+- **Concurrent-Safe Logging**: Supports logging from multiple goroutines, and provides asynchronous logging when writing
+  to file or network writers.
+- **Flexible Formatting**: Multiple build-in field types, extensible interface for custom field types.
 - **Custom Formatting**: Flexible formatting options including custom date/time formats, tag padding, and bracket types.
-- **Colorization**: Colorizes log output based on severity level for better visibility.
-- **Output Redirection**: Supports writing logs to various io.Writer destinations such as files or standard output.
+- **Colorization**: Configurable colorization can change the color of terminal output based on severity level for better 
+  visibility.
+- **Output Redirection**: Supports writing logs to various io.Writer destinations such as files or standard output using
+  a single logger.
 - **Silent Mode**: Allows disabling all logging when set.
 - **Error Handling**: Implements robust error handling and fallback mechanisms for logging errors.
 

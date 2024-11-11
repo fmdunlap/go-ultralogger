@@ -17,6 +17,7 @@ type ultraLogger struct {
     silent            bool
     fallback          bool
     panicOnPanicLevel bool
+    async             bool
 }
 
 func newUltraLogger() *ultraLogger {
@@ -26,6 +27,7 @@ func newUltraLogger() *ultraLogger {
         silent:            false,
         fallback:          true,
         panicOnPanicLevel: false,
+        async:             true,
     }
 }
 
@@ -45,7 +47,12 @@ func (l *ultraLogger) Log(level Level, data any) {
             continue
         }
 
-        go l.writeLogLineAsync(w, f, args, data, loglineTimeout)
+        if l.async {
+            go l.writeLogLineAsync(w, f, args, data, loglineTimeout)
+            continue
+        }
+
+        l.writeLogLine(w, f, args, data)
     }
 }
 
@@ -104,6 +111,24 @@ func (l *ultraLogger) handleLogWriterError(writer io.Writer, msgLevel Level, msg
     l.Log(msgLevel, msg)
 }
 
+func (l *ultraLogger) writeLogLine(
+    w io.Writer,
+    f LogLineFormatter,
+    args LogLineArgs,
+    data any,
+) {
+    formatResult := f.FormatLogLine(args, data)
+    if formatResult.err != nil {
+        l.Error(fmt.Sprintf("failed to format log line. formatter=%v, data=%v, err=%v", f, data, formatResult.err))
+        return
+    }
+
+    writeResult := write(w, formatResult.bytes)
+    if writeResult != nil {
+        l.handleLogWriterError(w, args.Level, data, writeResult)
+    }
+}
+
 func (l *ultraLogger) writeLogLineAsync(
     w io.Writer,
     f LogLineFormatter,
@@ -115,7 +140,7 @@ func (l *ultraLogger) writeLogLineAsync(
     defer cancel()
 
     fmtChan := make(chan FormatResult, 1)
-    go formatLogLine(ctx, fmtChan, args, f, data)
+    go formatLogLineAsync(ctx, fmtChan, args, f, data)
 
     var logBytes []byte
     select {
@@ -135,7 +160,7 @@ func (l *ultraLogger) writeLogLineAsync(
     }
 
     writeChan := make(chan error, 1)
-    go writeLogLine(ctx, writeChan, w, logBytes)
+    go writeLogLineAsync(ctx, writeChan, w, logBytes)
 
     select {
     case err := <-writeChan:
@@ -147,7 +172,7 @@ func (l *ultraLogger) writeLogLineAsync(
     }
 }
 
-func formatLogLine(
+func formatLogLineAsync(
     ctx context.Context,
     resultChan chan FormatResult,
     args LogLineArgs,
@@ -163,7 +188,7 @@ func formatLogLine(
     }
 }
 
-func writeLogLine(
+func writeLogLineAsync(
     ctx context.Context,
     resultChan chan error,
     w io.Writer,
