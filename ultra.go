@@ -1,10 +1,14 @@
 package ultralogger
 
 import (
+    "context"
     "fmt"
     "io"
     "os"
+    "time"
 )
+
+const loglineTimeout = time.Millisecond * 250
 
 type ultraLogger struct {
     minLevel          Level
@@ -25,40 +29,23 @@ func newUltraLogger() *ultraLogger {
     }
 }
 
-func (l *ultraLogger) writeLogLine(writer io.Writer, formatter LogLineFormatter, logLineContext LogLineContext, data any) {
-    if formatter == nil {
-        return
-    }
-
-    outBytes, err := formatter.FormatLogLine(logLineContext, data)
-
-    if err != nil {
-        l.Error(fmt.Sprintf("failed to format log line. formatter=%v, data=%v, err=%v", formatter, data, err))
-        return
-    }
-
-    if len(outBytes) == 0 {
-        return
-    }
-
-    if _, err := writer.Write(fmt.Append(outBytes, "\n")); err != nil {
-        l.handleLogWriterError(writer, logLineContext.Level, data, err)
-    }
-}
-
 // Log logs a message with the given level and message.
 func (l *ultraLogger) Log(level Level, data any) {
     if l.silent || level < l.minLevel {
         return
     }
 
-    loglineContext := LogLineContext{
+    args := LogLineArgs{
         Level: level,
         Tag:   l.tag,
     }
 
-    for writer, formatter := range l.destinations {
-        go l.writeLogLine(writer, formatter, loglineContext, data)
+    for w, f := range l.destinations {
+        if f == nil {
+            continue
+        }
+
+        go l.writeLogLineAsync(w, f, args, data, loglineTimeout)
     }
 }
 
@@ -115,4 +102,83 @@ func (l *ultraLogger) handleLogWriterError(writer io.Writer, msgLevel Level, msg
         fmt.Sprintf("error writing to original log writer, disabling formatter for writer: %v", err),
     )
     l.Log(msgLevel, msg)
+}
+
+func (l *ultraLogger) writeLogLineAsync(
+    w io.Writer,
+    f LogLineFormatter,
+    args LogLineArgs,
+    data any,
+    timeout time.Duration,
+) {
+    ctx, cancel := context.WithTimeout(context.Background(), timeout)
+    defer cancel()
+
+    fmtChan := make(chan FormatResult, 1)
+    go formatLogLine(ctx, fmtChan, args, f, data)
+
+    var logBytes []byte
+    select {
+    case result := <-fmtChan:
+        if result.err != nil {
+            l.Error(fmt.Sprintf("failed to format log line. formatter=%v, data=%v, err=%v", f, data, result.err))
+            return
+        }
+
+        if len(result.bytes) == 0 {
+            return
+        }
+
+        logBytes = result.bytes
+    case <-ctx.Done():
+        return
+    }
+
+    writeChan := make(chan error, 1)
+    go writeLogLine(ctx, writeChan, w, logBytes)
+
+    select {
+    case err := <-writeChan:
+        if err != nil {
+            l.handleLogWriterError(w, args.Level, data, err)
+        }
+    case <-ctx.Done():
+        return
+    }
+}
+
+func formatLogLine(
+    ctx context.Context,
+    resultChan chan FormatResult,
+    args LogLineArgs,
+    formatter LogLineFormatter,
+    data any,
+) {
+    defer close(resultChan)
+
+    select {
+    case <-ctx.Done():
+        return
+    case resultChan <- formatter.FormatLogLine(args, data):
+    }
+}
+
+func writeLogLine(
+    ctx context.Context,
+    resultChan chan error,
+    w io.Writer,
+    b []byte,
+) {
+    defer close(resultChan)
+
+    select {
+    case <-ctx.Done():
+        return
+    case resultChan <- write(w, b):
+    }
+}
+
+func write(w io.Writer, b []byte) error {
+    _, err := w.Write(append(b, '\n'))
+    return err
 }

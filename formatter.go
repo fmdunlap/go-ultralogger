@@ -7,8 +7,19 @@ const (
     OutputFormatText OutputFormat = "text"
 )
 
+type LogLineArgs struct {
+    Level        Level
+    Tag          string
+    OutputFormat OutputFormat
+}
+
+type FormatResult struct {
+    bytes []byte
+    err   error
+}
+
 type LogLineFormatter interface {
-    FormatLogLine(mCtx LogLineContext, data any) ([]byte, error)
+    FormatLogLine(args LogLineArgs, data any) FormatResult
 }
 
 type FormatterOption func(f LogLineFormatter) LogLineFormatter

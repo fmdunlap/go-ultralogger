@@ -83,9 +83,9 @@ func TestAnsiColor_Colorize(t *testing.T) {
             want: []byte("\033[1;3;4;5;9;31mtest\033[0m"),
         },
         {
-            name: "RGB",
+            name: "ColorAnsiRGB",
             msg:  []byte("test"),
-            c:    RGB(138, 206, 0),
+            c:    ColorAnsiRGB(138, 206, 0),
             want: []byte("\033[38;2;138;206;0mtest\033[0m"),
         },
         {
@@ -141,13 +141,13 @@ func TestAnsiColor_Colorize(t *testing.T) {
         {
             name: "ColorRGB + BackgroundRGB",
             msg:  []byte("test"),
-            c:    RGB(138, 206, 0).SetBackground(BackgroundRGB(255, 0, 0)),
+            c:    ColorAnsiRGB(138, 206, 0).SetBackground(BackgroundRGB(255, 0, 0)),
             want: []byte("\033[48;2;255;0;0;38;2;138;206;0mtest\033[0m"),
         },
         {
             name: "ColorRGB + BackgroundRGB + Bold",
             msg:  []byte("test"),
-            c:    RGB(138, 206, 0).SetBackground(BackgroundRGB(255, 0, 0)).Bold(),
+            c:    ColorAnsiRGB(138, 206, 0).SetBackground(BackgroundRGB(255, 0, 0)).Bold(),
             want: []byte("\033[1;48;2;255;0;0;38;2;138;206;0mtest\033[0m"),
         },
     }
@@ -204,8 +204,8 @@ func TestAnsiColor_totalBufferLength(t *testing.T) {
             want:  23,
         },
         {
-            name: "RGB",
-            c:    RGB(138, 206, 0),
+            name: "ColorAnsiRGB",
+            c:    ColorAnsiRGB(138, 206, 0),
             // output: "\033[38;2;138;206;0mtest\033[0m",
             input: []byte("test"),
             want:  25,
@@ -234,13 +234,13 @@ func TestAnsiColor_totalBufferLength(t *testing.T) {
         },
         {
             name:  "ColorRGB + BackgroundRGB",
-            c:     RGB(138, 206, 0).SetBackground(BackgroundRGB(255, 0, 0)),
+            c:     ColorAnsiRGB(138, 206, 0).SetBackground(BackgroundRGB(255, 0, 0)),
             input: []byte("test"),
             want:  38,
         },
         {
             name:  "ColorRGB + BackgroundRGB + Bold",
-            c:     RGB(138, 206, 0).SetBackground(BackgroundRGB(255, 0, 0)).Bold(),
+            c:     ColorAnsiRGB(138, 206, 0).SetBackground(BackgroundRGB(255, 0, 0)).Bold(),
             input: []byte("test"),
             want:  40,
         },

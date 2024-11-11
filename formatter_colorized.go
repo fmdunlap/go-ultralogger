@@ -17,18 +17,18 @@ type ColorizedFormatter struct {
     LevelColors   map[Level]Color
 }
 
-func (f *ColorizedFormatter) FormatLogLine(mCtx LogLineContext, data any) ([]byte, error) {
-    logLine, err := f.BaseFormatter.FormatLogLine(mCtx, data)
-    if err != nil {
-        return nil, err
+func (f *ColorizedFormatter) FormatLogLine(args LogLineArgs, data any) FormatResult {
+    res := f.BaseFormatter.FormatLogLine(args, data)
+    if res.err != nil {
+        return res
     }
 
-    color, ok := f.LevelColors[mCtx.Level]
+    color, ok := f.LevelColors[args.Level]
     if !ok {
-        return logLine, &MissingLevelColorError{level: mCtx.Level}
+        return FormatResult{res.bytes, &MissingLevelColorError{level: args.Level}}
     }
 
-    return color.Colorize(logLine), nil
+    return FormatResult{color.Colorize(res.bytes), nil}
 }
 
 func NewColorizedFormatter(baseFormatter LogLineFormatter, levelColors map[Level]Color) *ColorizedFormatter {

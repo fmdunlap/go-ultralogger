@@ -71,3 +71,15 @@ type AmbiguousDestinationError struct{}
 func (e *AmbiguousDestinationError) Error() string {
     return "formatters have ambiguous destinations"
 }
+
+type InvalidFieldDataTypeError struct {
+    field string
+}
+
+func (e *InvalidFieldDataTypeError) Error() string {
+    return fmt.Sprintf("invalid field data for field: %v", e.field)
+}
+
+var EmptyFieldNameError = errors.New("field name cannot be empty")
+
+var NilFormatterError = errors.New("formatter cannot be nil")

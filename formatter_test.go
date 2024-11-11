@@ -114,14 +114,14 @@ func Test_ultraFormatter_Format(t *testing.T) {
                 f = NewColorizedFormatter(f, tt.levelColors)
             }
 
-            messageContext := LogLineContext{
+            lineArgs := LogLineArgs{
                 Level: tt.args.level,
                 Tag:   "tag",
             }
 
-            if got, _ := f.FormatLogLine(messageContext, tt.args.msg); !bytes.Equal(got, tt.want) {
-                fmt.Println("Got:  ", string(got))
-                fmt.Println("Got:  ", got)
+            if got := f.FormatLogLine(lineArgs, tt.args.msg); !bytes.Equal(got.bytes, tt.want) {
+                fmt.Println("Got:  ", string(got.bytes))
+                fmt.Println("Got:  ", got.bytes)
                 fmt.Println("Want: ", tt.want)
                 t.Errorf("Format() = %v, want %v", got, tt.want)
             }

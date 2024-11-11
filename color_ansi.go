@@ -25,7 +25,7 @@ type AnsiColor struct {
     background AnsiBackgroundColor
 }
 
-func RGB(r, g, b int) AnsiColor {
+func ColorAnsiRGB(r, g, b int) AnsiColor {
     return AnsiColor{
         code:     []byte(fmt.Sprintf("38;2;%d;%d;%d", r, g, b)),
         settings: []ansiSetting{},

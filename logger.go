@@ -41,8 +41,10 @@ type Logger interface {
 var defaultDateTimeFormat = "2006-01-02 15:04:05"
 var defaultLevelBracket = BracketAngle
 
+var defaultCurrentTimeField, _ = NewCurrentTimeField("time", defaultDateTimeFormat)
+
 var defaultFields = []Field{
-    NewDateTimeField(defaultDateTimeFormat),
+    defaultCurrentTimeField,
     NewLevelField(defaultLevelBracket),
     &FieldMessage{},
 }

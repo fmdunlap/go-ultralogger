@@ -36,19 +36,19 @@ func (f *FieldTag) FieldFormatter() (FieldFormatter, error) {
     return f.format, nil
 }
 
-func (f *FieldTag) format(mCtx LogLineContext, outputFormat OutputFormat, _ any) *FieldResult {
-    result := &FieldResult{
+func (f *FieldTag) format(args LogLineArgs, _ any) (FieldResult, error) {
+    result := FieldResult{
         Name: "tag",
     }
 
-    switch outputFormat {
-    case OutputFormatJSON:
-        result.Data = mCtx.Tag
+    switch args.OutputFormat {
     case OutputFormatText:
-        result.Data = f.tagString(mCtx.Tag)
+        result.Data = f.tagString(args.Tag)
+    case OutputFormatJSON:
+        result.Data = args.Tag
     }
 
-    return result
+    return result, nil
 }
 
 type TagFieldOpt func(tf *FieldTag)
