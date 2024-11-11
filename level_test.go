@@ -1,4 +1,4 @@
-package level
+package ultralogger
 
 import (
     "reflect"

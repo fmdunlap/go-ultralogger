@@ -2,10 +2,7 @@ package ultralogger
 
 import (
     "errors"
-    "github.com/fmdunlap/go-ultralogger/v2/bracket"
-    "github.com/fmdunlap/go-ultralogger/v2/field"
-    "github.com/fmdunlap/go-ultralogger/v2/formatter"
-    "github.com/fmdunlap/go-ultralogger/v2/level"
+    "io"
     "os"
 )
 
@@ -15,78 +12,43 @@ import (
 // to the loggers formatting settings.
 type Logger interface {
     // Log logs at the specified level without formatting.
-    Log(level level.Level, msg string)
-
-    // Logf logs at the specified level with formatted message.
-    Logf(level level.Level, format string, args ...any)
+    Log(level Level, data any)
 
     // Debug logs a debug-level message.
-    Debug(msg string)
-
-    // Debugf logs a debug-level message with formatting.
-    Debugf(format string, args ...any)
+    Debug(data any)
 
     // Info logs an info-level message.
-    Info(msg string)
-
-    // Infof logs an info-level message with formatting.
-    Infof(format string, args ...any)
+    Info(data any)
 
     // Warn logs a warning-level message.
-    Warn(msg string)
-
-    // Warnf logs a warning-level message with formatting.
-    Warnf(format string, args ...any)
+    Warn(data any)
 
     // Error logs an error-level message.
-    Error(msg string)
-
-    // Errorf logs an error-level message with formatting.
-    Errorf(format string, args ...any)
+    Error(data any)
 
     // Panic logs a panic-level message and then panics.
-    Panic(msg string)
-
-    // Panicf logs a panic-level message with formatting and then panics.
-    Panicf(format string, args ...any)
-
-    // Slog returns the string representation of a log message with the given level and message.
-    Slog(level level.Level, msg string) string
-
-    // Slogf returns the string representation of a formatted log message with the given level and sprint string.
-    Slogf(level level.Level, format string, args ...any) string
-
-    // Slogln returns the string representation of a log message with the given level and message, followed by a newline.
-    Slogln(level level.Level, msg string) string
+    Panic(data any)
 
     // SetMinLevel sets the minimum logging level that will be output.
-    SetMinLevel(level level.Level)
+    SetMinLevel(level Level)
+
+    // SetTag sets the tag for the logger.
+    SetTag(tag string)
+
+    Silence(enable bool)
 }
 
 var defaultDateTimeFormat = "2006-01-02 15:04:05"
-var defaultLevelBracket = bracket.Angle
+var defaultLevelBracket = BracketAngle
 
-var defaultPrefixFields = []field.Field{
-    field.NewDateTimeField(defaultDateTimeFormat),
-    field.NewLevelField(defaultLevelBracket),
+var defaultFields = []Field{
+    NewDateTimeField(defaultDateTimeFormat),
+    NewLevelField(defaultLevelBracket),
+    &FieldMessage{},
 }
 
-// NewLogger returns a new Logger that writes to stdout
-func NewLogger(opts ...LoggerOption) (Logger, error) {
-    fmtr, _ := formatter.NewColorizedFormatter(
-        defaultPrefixFields,
-        nil,
-        false,
-    )
-
-    l := &ultraLogger{
-        writer:            os.Stdout,
-        minLevel:          level.Info,
-        formatter:         fmtr,
-        silent:            false,
-        fallback:          true,
-        panicOnPanicLevel: false,
-    }
+func NewLoggerWithOptions(opts ...LoggerOption) (Logger, error) {
+    l := newUltraLogger()
 
     for _, opt := range opts {
         if err := opt(l); err != nil {
@@ -94,14 +56,28 @@ func NewLogger(opts ...LoggerOption) (Logger, error) {
         }
     }
 
+    if l.destinations == nil {
+        defaultFormatter, _ := NewFormatter(OutputFormatText, defaultFields)
+        l.destinations = map[io.Writer]LogLineFormatter{os.Stdout: defaultFormatter}
+    }
+
     return l, nil
 }
 
-// NewFileLogger returns a new Logger that writes to a file.
+// NewLogger returns a new Logger that writes to stdout with the default text output format.
+func NewLogger() Logger {
+    formatter, _ := NewFormatter(OutputFormatText, defaultFields)
+
+    logger, _ := NewLoggerWithOptions(WithStdoutFormatter(formatter))
+
+    return logger
+}
+
+//NewFileLogger returns a new Logger that writes to a file.
 //
-// If the filename is empty, FileNotSpecifiedError is returned.
-// If the file does not exist, FileNotFoundError is returned.
-func NewFileLogger(filename string) (Logger, error) {
+//If the filename is empty, FileNotSpecifiedError is returned.
+//If the file does not exist, FileNotFoundError is returned.
+func NewFileLogger(filename string, outputFormat OutputFormat) (Logger, error) {
     if filename == "" {
         return nil, FileNotSpecifiedError
     }
@@ -115,7 +91,12 @@ func NewFileLogger(filename string) (Logger, error) {
         return nil, err
     }
 
-    fileLogger, err := NewLogger(WithDestination(filePtr))
+    formatter, err := NewFormatter(outputFormat, defaultFields)
+    if err != nil {
+        return nil, err
+    }
+
+    fileLogger, err := NewLoggerWithOptions(WithDestination(filePtr, formatter))
     if err != nil {
         return nil, err
     }

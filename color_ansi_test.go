@@ -1,6 +1,7 @@
-package color
+package ultralogger
 
 import (
+    "bytes"
     "fmt"
     "testing"
 )
@@ -8,154 +9,154 @@ import (
 func TestAnsiColor_Colorize(t *testing.T) {
     tests := []struct {
         name string
-        msg  string
+        msg  []byte
         c    AnsiColor
-        want string
+        want []byte
     }{
         {
-            name: "Red",
-            msg:  "test",
-            c:    Red,
-            want: "\033[31mtest\033[0m",
+            name: "ColorRed",
+            msg:  []byte("test"),
+            c:    ColorRed,
+            want: []byte("\033[31mtest\033[0m"),
         },
         {
             name: "Bold",
-            msg:  "test",
+            msg:  []byte("test"),
             c: AnsiColor{
                 code:     []byte("31"),
-                settings: []ansiSetting{Bold},
+                settings: []ansiSetting{AnsiBold},
             },
-            want: "\033[1;31mtest\033[0m",
+            want: []byte("\033[1;31mtest\033[0m"),
         },
         {
             name: "Dim",
-            msg:  "test",
+            msg:  []byte("test"),
             c: AnsiColor{
                 code:     []byte("31"),
-                settings: []ansiSetting{Dim},
+                settings: []ansiSetting{AnsiDim},
             },
-            want: "\033[2;31mtest\033[0m",
+            want: []byte("\033[2;31mtest\033[0m"),
         },
         {
             name: "Italic",
-            msg:  "test",
+            msg:  []byte("test"),
             c: AnsiColor{
                 code:     []byte("31"),
-                settings: []ansiSetting{Italic},
+                settings: []ansiSetting{AnsiItalic},
             },
-            want: "\033[3;31mtest\033[0m",
+            want: []byte("\033[3;31mtest\033[0m"),
         },
         {
             name: "Underline",
-            msg:  "test",
+            msg:  []byte("test"),
             c: AnsiColor{
                 code:     []byte("31"),
-                settings: []ansiSetting{Underline},
+                settings: []ansiSetting{AnsiUnderline},
             },
-            want: "\033[4;31mtest\033[0m",
+            want: []byte("\033[4;31mtest\033[0m"),
         },
         {
             name: "SlowBlink",
-            msg:  "test",
+            msg:  []byte("test"),
             c: AnsiColor{
                 code:     []byte("31"),
-                settings: []ansiSetting{SlowBlink},
+                settings: []ansiSetting{AnsiSlowBlink},
             },
-            want: "\033[5;31mtest\033[0m",
+            want: []byte("\033[5;31mtest\033[0m"),
         },
         {
             name: "Strikethrough",
-            msg:  "test",
+            msg:  []byte("test"),
             c: AnsiColor{
                 code:     []byte("31"),
-                settings: []ansiSetting{Strikethrough},
+                settings: []ansiSetting{AnsiStrikethrough},
             },
-            want: "\033[9;31mtest\033[0m",
+            want: []byte("\033[9;31mtest\033[0m"),
         },
         {
             name: "Multiple Settings",
-            msg:  "test",
+            msg:  []byte("test"),
             c: AnsiColor{
                 code:     []byte("31"),
-                settings: []ansiSetting{Bold, Italic, Underline, SlowBlink, Strikethrough},
+                settings: []ansiSetting{AnsiBold, AnsiItalic, AnsiUnderline, AnsiSlowBlink, AnsiStrikethrough},
             },
-            want: "\033[1;3;4;5;9;31mtest\033[0m",
+            want: []byte("\033[1;3;4;5;9;31mtest\033[0m"),
         },
         {
             name: "RGB",
-            msg:  "test",
+            msg:  []byte("test"),
             c:    RGB(138, 206, 0),
-            want: "\033[38;2;138;206;0mtest\033[0m",
+            want: []byte("\033[38;2;138;206;0mtest\033[0m"),
         },
         {
             name: "BackgroundRed",
-            msg:  "test",
+            msg:  []byte("test"),
             c: AnsiColor{
                 code:       []byte("30"),
                 settings:   []ansiSetting{},
                 background: BackgroundRed,
             },
-            want: "\033[41;30mtest\033[0m",
+            want: []byte("\033[41;30mtest\033[0m"),
         },
         {
             name: "BackgroundRGB",
-            msg:  "test",
+            msg:  []byte("test"),
             c: AnsiColor{
                 code:       []byte("30"),
                 settings:   []ansiSetting{},
                 background: BackgroundRGB(138, 206, 0),
             },
-            want: "\033[48;2;138;206;0;30mtest\033[0m",
+            want: []byte("\033[48;2;138;206;0;30mtest\033[0m"),
         },
         {
             name: "BackgroundRGB + Bold",
-            msg:  "test",
+            msg:  []byte("test"),
             c: AnsiColor{
                 code:       []byte("30"),
-                settings:   []ansiSetting{Bold},
+                settings:   []ansiSetting{AnsiBold},
                 background: BackgroundRGB(138, 206, 0),
             },
-            want: "\033[1;48;2;138;206;0;30mtest\033[0m",
+            want: []byte("\033[1;48;2;138;206;0;30mtest\033[0m"),
         },
         {
             name: "BackgroundRed + Multiple Settings",
-            msg:  "test",
+            msg:  []byte("test"),
             c: AnsiColor{
                 code:       []byte("30"),
-                settings:   []ansiSetting{Bold, Italic, Underline, SlowBlink, Strikethrough},
+                settings:   []ansiSetting{AnsiBold, AnsiItalic, AnsiUnderline, AnsiSlowBlink, AnsiStrikethrough},
                 background: BackgroundRed,
             },
-            want: "\033[1;3;4;5;9;41;30mtest\033[0m",
+            want: []byte("\033[1;3;4;5;9;41;30mtest\033[0m"),
         },
         {
             name: "BackgroundRGB + Multiple Settings",
-            msg:  "test",
+            msg:  []byte("test"),
             c: AnsiColor{
                 code:       []byte("30"),
-                settings:   []ansiSetting{Bold, Italic, Underline, SlowBlink, Strikethrough},
+                settings:   []ansiSetting{AnsiBold, AnsiItalic, AnsiUnderline, AnsiSlowBlink, AnsiStrikethrough},
                 background: BackgroundRGB(138, 206, 0),
             },
-            want: "\033[1;3;4;5;9;48;2;138;206;0;30mtest\033[0m",
+            want: []byte("\033[1;3;4;5;9;48;2;138;206;0;30mtest\033[0m"),
         },
         {
             name: "ColorRGB + BackgroundRGB",
-            msg:  "test",
+            msg:  []byte("test"),
             c:    RGB(138, 206, 0).SetBackground(BackgroundRGB(255, 0, 0)),
-            want: "\033[48;2;255;0;0;38;2;138;206;0mtest\033[0m",
+            want: []byte("\033[48;2;255;0;0;38;2;138;206;0mtest\033[0m"),
         },
         {
             name: "ColorRGB + BackgroundRGB + Bold",
-            msg:  "test",
+            msg:  []byte("test"),
             c:    RGB(138, 206, 0).SetBackground(BackgroundRGB(255, 0, 0)).Bold(),
-            want: "\033[1;48;2;255;0;0;38;2;138;206;0mtest\033[0m",
+            want: []byte("\033[1;48;2;255;0;0;38;2;138;206;0mtest\033[0m"),
         },
     }
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
-            fmt.Println(tt.c.Colorize(tt.msg))
-            if got := tt.c.Colorize(tt.msg); got != tt.want {
-                fmt.Println("Got:  ", []byte(got))
-                fmt.Println("Want: ", []byte(tt.want))
+            got := tt.c.Colorize(tt.msg)
+            if !bytes.Equal(got, tt.want) {
+                fmt.Println("Got:  ", got)
+                fmt.Println("Want: ", tt.want)
                 t.Errorf("Colorize() = %v, want %v", got, tt.want)
             }
         })
@@ -166,7 +167,7 @@ func TestAnsiColor_totalBufferLength(t *testing.T) {
     tests := []struct {
         name  string
         c     AnsiColor
-        input string
+        input []byte
         want  int
     }{
         {
@@ -177,36 +178,36 @@ func TestAnsiColor_totalBufferLength(t *testing.T) {
                 background: nil,
                 // output:     "\033[31mtest\033[0m",
             },
-            input: "test",
+            input: []byte("test"),
             want:  13,
         },
         {
             name: "Bold",
             c: AnsiColor{
                 code:       []byte("31"),
-                settings:   []ansiSetting{Bold},
+                settings:   []ansiSetting{AnsiBold},
                 background: nil,
                 // output:     "\033[1;31mtest\033[0m",
             },
-            input: "test",
+            input: []byte("test"),
             want:  15,
         },
         {
             name: "Multiple Settings",
             c: AnsiColor{
                 code:       []byte("31"),
-                settings:   []ansiSetting{Bold, Italic, Underline, SlowBlink, Strikethrough},
+                settings:   []ansiSetting{AnsiBold, AnsiItalic, AnsiUnderline, AnsiSlowBlink, AnsiStrikethrough},
                 background: nil,
                 // output:     "\033[1;3;4;5;9;31mtest\033[0m",
             },
-            input: "test",
+            input: []byte("test"),
             want:  23,
         },
         {
             name: "RGB",
             c:    RGB(138, 206, 0),
             // output: "\033[38;2;138;206;0mtest\033[0m",
-            input: "test",
+            input: []byte("test"),
             want:  25,
         },
         {
@@ -217,7 +218,7 @@ func TestAnsiColor_totalBufferLength(t *testing.T) {
                 background: BackgroundRed,
                 // output:     "\033[41;30mtest\033[0m",
             },
-            input: "test",
+            input: []byte("test"),
             want:  16,
         },
         {
@@ -228,19 +229,19 @@ func TestAnsiColor_totalBufferLength(t *testing.T) {
                 background: BackgroundRGB(138, 206, 0),
                 // output:     "\033[48;2;138;206;0;30mtest\033[0m",
             },
-            input: "test",
+            input: []byte("test"),
             want:  28,
         },
         {
             name:  "ColorRGB + BackgroundRGB",
             c:     RGB(138, 206, 0).SetBackground(BackgroundRGB(255, 0, 0)),
-            input: "test",
+            input: []byte("test"),
             want:  38,
         },
         {
             name:  "ColorRGB + BackgroundRGB + Bold",
             c:     RGB(138, 206, 0).SetBackground(BackgroundRGB(255, 0, 0)).Bold(),
-            input: "test",
+            input: []byte("test"),
             want:  40,
         },
     }
