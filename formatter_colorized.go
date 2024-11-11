@@ -5,32 +5,37 @@ import (
 )
 
 var defaultLevelColors = map[Level]Color{
-    Debug: ColorGreen,
-    Info:  ColorWhite,
-    Warn:  ColorYellow,
-    Error: ColorRed,
-    Panic: ColorMagenta,
+    Debug: Colors.Green,
+    Info:  Colors.White,
+    Warn:  Colors.Yellow,
+    Error: Colors.Red,
+    Panic: Colors.Magenta,
 }
 
+// ColorizedFormatter colorizes the bytes of the base formatter using the provided colors.
 type ColorizedFormatter struct {
     BaseFormatter LogLineFormatter
     LevelColors   map[Level]Color
 }
 
-func (f *ColorizedFormatter) FormatLogLine(mCtx LogLineContext, data any) ([]byte, error) {
-    logLine, err := f.BaseFormatter.FormatLogLine(mCtx, data)
-    if err != nil {
-        return nil, err
+// FormatLogLine formats the log line using the provided data and returns a FormatResult which contains the formatted
+// log line and any errors that may have occurred.
+func (f *ColorizedFormatter) FormatLogLine(args LogLineArgs, data any) FormatResult {
+    res := f.BaseFormatter.FormatLogLine(args, data)
+    if res.err != nil {
+        return res
     }
 
-    color, ok := f.LevelColors[mCtx.Level]
+    color, ok := f.LevelColors[args.Level]
     if !ok {
-        return logLine, &MissingLevelColorError{level: mCtx.Level}
+        return FormatResult{res.bytes, &ErrorMissingLevelColor{level: args.Level}}
     }
 
-    return color.Colorize(logLine), nil
+    return FormatResult{color.Colorize(res.bytes), nil}
 }
 
+// NewColorizedFormatter returns a new ColorizedFormatter that formats the provided base formatter with the provided
+// colors.
 func NewColorizedFormatter(baseFormatter LogLineFormatter, levelColors map[Level]Color) *ColorizedFormatter {
     if levelColors == nil {
         levelColors = make(map[Level]Color)

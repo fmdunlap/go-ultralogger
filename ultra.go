@@ -1,10 +1,14 @@
 package ultralogger
 
 import (
+    "context"
     "fmt"
     "io"
     "os"
+    "time"
 )
+
+const loglineTimeout = time.Millisecond * 250
 
 type ultraLogger struct {
     minLevel          Level
@@ -13,6 +17,7 @@ type ultraLogger struct {
     silent            bool
     fallback          bool
     panicOnPanicLevel bool
+    async             bool
 }
 
 func newUltraLogger() *ultraLogger {
@@ -22,27 +27,7 @@ func newUltraLogger() *ultraLogger {
         silent:            false,
         fallback:          true,
         panicOnPanicLevel: false,
-    }
-}
-
-func (l *ultraLogger) writeLogLine(writer io.Writer, formatter LogLineFormatter, logLineContext LogLineContext, data any) {
-    if formatter == nil {
-        return
-    }
-
-    outBytes, err := formatter.FormatLogLine(logLineContext, data)
-
-    if err != nil {
-        l.Error(fmt.Sprintf("failed to format log line. formatter=%v, data=%v, err=%v", formatter, data, err))
-        return
-    }
-
-    if len(outBytes) == 0 {
-        return
-    }
-
-    if _, err := writer.Write(fmt.Append(outBytes, "\n")); err != nil {
-        l.handleLogWriterError(writer, logLineContext.Level, data, err)
+        async:             true,
     }
 }
 
@@ -52,13 +37,22 @@ func (l *ultraLogger) Log(level Level, data any) {
         return
     }
 
-    loglineContext := LogLineContext{
+    args := LogLineArgs{
         Level: level,
         Tag:   l.tag,
     }
 
-    for writer, formatter := range l.destinations {
-        go l.writeLogLine(writer, formatter, loglineContext, data)
+    for w, f := range l.destinations {
+        if f == nil {
+            continue
+        }
+
+        if l.async {
+            go l.writeLogLineAsync(w, f, args, data, loglineTimeout)
+            continue
+        }
+
+        l.writeLogLine(w, f, args, data)
     }
 }
 
@@ -115,4 +109,101 @@ func (l *ultraLogger) handleLogWriterError(writer io.Writer, msgLevel Level, msg
         fmt.Sprintf("error writing to original log writer, disabling formatter for writer: %v", err),
     )
     l.Log(msgLevel, msg)
+}
+
+func (l *ultraLogger) writeLogLine(
+    w io.Writer,
+    f LogLineFormatter,
+    args LogLineArgs,
+    data any,
+) {
+    formatResult := f.FormatLogLine(args, data)
+    if formatResult.err != nil {
+        l.Error(fmt.Sprintf("failed to format log line. formatter=%v, data=%v, err=%v", f, data, formatResult.err))
+        return
+    }
+
+    writeResult := write(w, formatResult.bytes)
+    if writeResult != nil {
+        l.handleLogWriterError(w, args.Level, data, writeResult)
+    }
+}
+
+func (l *ultraLogger) writeLogLineAsync(
+    w io.Writer,
+    f LogLineFormatter,
+    args LogLineArgs,
+    data any,
+    timeout time.Duration,
+) {
+    ctx, cancel := context.WithTimeout(context.Background(), timeout)
+    defer cancel()
+
+    fmtChan := make(chan FormatResult, 1)
+    go formatLogLineAsync(ctx, fmtChan, args, f, data)
+
+    var logBytes []byte
+    select {
+    case result := <-fmtChan:
+        if result.err != nil {
+            l.Error(fmt.Sprintf("failed to format log line. formatter=%v, data=%v, err=%v", f, data, result.err))
+            return
+        }
+
+        if len(result.bytes) == 0 {
+            return
+        }
+
+        logBytes = result.bytes
+    case <-ctx.Done():
+        return
+    }
+
+    writeChan := make(chan error, 1)
+    go writeLogLineAsync(ctx, writeChan, w, logBytes)
+
+    select {
+    case err := <-writeChan:
+        if err != nil {
+            l.handleLogWriterError(w, args.Level, data, err)
+        }
+    case <-ctx.Done():
+        return
+    }
+}
+
+func formatLogLineAsync(
+    ctx context.Context,
+    resultChan chan FormatResult,
+    args LogLineArgs,
+    formatter LogLineFormatter,
+    data any,
+) {
+    defer close(resultChan)
+
+    select {
+    case <-ctx.Done():
+        return
+    case resultChan <- formatter.FormatLogLine(args, data):
+    }
+}
+
+func writeLogLineAsync(
+    ctx context.Context,
+    resultChan chan error,
+    w io.Writer,
+    b []byte,
+) {
+    defer close(resultChan)
+
+    select {
+    case <-ctx.Done():
+        return
+    case resultChan <- write(w, b):
+    }
+}
+
+func write(w io.Writer, b []byte) error {
+    _, err := w.Write(append(b, '\n'))
+    return err
 }

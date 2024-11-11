@@ -5,69 +5,79 @@ import (
     "fmt"
 )
 
-type LoggerInitializationError struct {
+type ErrorLoggerInitialization struct {
     err error
 }
 
-func (e *LoggerInitializationError) Error() string {
+func (e *ErrorLoggerInitialization) Error() string {
     return fmt.Sprintf("error initializing logger: %v", e.err)
 }
 
-func (e *LoggerInitializationError) Unwrap() error {
+func (e *ErrorLoggerInitialization) Unwrap() error {
     return e.err
 }
 
-var FileNotSpecifiedError = errors.New("filename not provided to NewFileLogger")
+var ErrorFileNotSpecified = errors.New("filename not provided to NewFileLogger")
 
-type FileNotFoundError struct {
+type ErrorFileNotFound struct {
     filename string
 }
 
-func (e *FileNotFoundError) Error() string {
+func (e *ErrorFileNotFound) Error() string {
     return fmt.Sprintf("file not found for FileLogger: %s", e.filename)
 }
 
-var ColorizationNotSupportedError = errors.New("formatter does not support colorization")
-
-type MissingLevelColorError struct {
+type ErrorMissingLevelColor struct {
     level Level
 }
 
-func (e *MissingLevelColorError) Error() string {
+func (e *ErrorMissingLevelColor) Error() string {
     return fmt.Sprintf("missing color for level: %v", e.level)
 }
 
-type LevelParsingError struct {
+type ErrorLevelParsing struct {
     level string
 }
 
-func (e *LevelParsingError) Error() string {
+func (e *ErrorLevelParsing) Error() string {
     return fmt.Sprintf("invalid level: %s", e.level)
 }
 
-type FieldFormatterError struct {
+type ErrorFieldFormatterInit struct {
     field Field
     err   error
 }
 
-func (e *FieldFormatterError) Error() string {
+func (e *ErrorFieldFormatterInit) Error() string {
     return fmt.Sprintf("error formatting field: %v, err=%v", e.field, e.err)
 }
 
-func (e *FieldFormatterError) Unwrap() error {
+func (e *ErrorFieldFormatterInit) Unwrap() error {
     return e.err
 }
 
-type InvalidOutputFormatError struct {
+type ErrorInvalidOutput struct {
     outputFormat OutputFormat
 }
 
-func (e *InvalidOutputFormatError) Error() string {
+func (e *ErrorInvalidOutput) Error() string {
     return fmt.Sprintf("invalid output format: %v", e.outputFormat)
 }
 
-type AmbiguousDestinationError struct{}
+type ErrorAmbiguousDestination struct{}
 
-func (e *AmbiguousDestinationError) Error() string {
+func (e *ErrorAmbiguousDestination) Error() string {
     return "formatters have ambiguous destinations"
 }
+
+type ErrorInvalidFieldDataType struct {
+    field string
+}
+
+func (e *ErrorInvalidFieldDataType) Error() string {
+    return fmt.Sprintf("invalid field data for field: %v", e.field)
+}
+
+var ErrorEmptyFieldName = errors.New("field name cannot be empty")
+
+var ErrorNilFormatter = errors.New("formatter cannot be nil")

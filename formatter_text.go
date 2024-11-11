@@ -1,33 +1,45 @@
 package ultralogger
 
-import "fmt"
+import (
+    "fmt"
+)
 
+// TextFormatter is a formatter that formats log lines as text.
 type TextFormatter struct {
     Fields         []Field
     FieldSeparator string
 }
 
-func (f *TextFormatter) FormatLogLine(mCtx LogLineContext, data any) ([]byte, error) {
-    lineData := make([]byte, 0)
+// TODO: Provide a way to specify the separator between fields.
+// TODO: Provide a way to specify behavior on nil data.
+
+// FormatLogLine formats the log line using the provided data and returns a FormatResult which contains the formatted
+// log line and any errors that may have occurred.
+func (f *TextFormatter) FormatLogLine(args LogLineArgs, data any) FormatResult {
+    line := make([]byte, 0)
+    args.OutputFormat = OutputFormatText
 
     for i, field := range f.Fields {
-        fieldFormatter, err := field.FieldFormatter()
+        fieldResult, err := computeFieldResult(field, args, data)
         if err != nil {
-            return nil, &FieldFormatterError{field: field, err: err}
+            return FormatResult{nil, &ErrorFieldFormatterInit{field: field, err: err}}
         }
 
-        res := fieldFormatter(mCtx, OutputFormatText, data)
-
-        if res == nil {
+        if fieldResult == nil {
             continue
         }
 
+        resultBytes := fieldResult.Data
+        if fieldResult.Data == nil {
+            resultBytes = "<nil>"
+        }
+
         if i < len(f.Fields)-1 {
-            lineData = fmt.Append(lineData, fieldFormatter(mCtx, OutputFormatText, data).Data, " ")
+            line = fmt.Append(line, resultBytes, " ")
         } else {
-            lineData = fmt.Append(lineData, fieldFormatter(mCtx, OutputFormatText, data).Data)
+            line = fmt.Append(line, resultBytes)
         }
     }
 
-    return lineData, nil
+    return FormatResult{line, nil}
 }
